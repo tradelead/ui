@@ -6,16 +6,10 @@ const AccountMenu = () => {
   const app = useContext(AppContext);
   const { register, login, logout } = app.auth;
 
-  const [loggedIn, setLoggedIn] = useState(false);
   const [open, setOpen] = useState(false);
   const toggleOpen = () => setOpen(!open);
 
-  useEffect(() => {
-    (async () => {
-      const user = await app.auth.current();
-      setLoggedIn(user.id !== null);
-    })();
-  });
+  const loggedIn = app.trader.id != null;
 
   const defaultProfileThumbnail = `${process.env.PUBLIC_URL}/imgs/default-profile-thumbnail.png`;
   const [profileThumbnail, setProfileThumbnail] = useState(defaultProfileThumbnail);
@@ -31,8 +25,8 @@ const AccountMenu = () => {
   if (!loggedIn) {
     return (
       <div className="account-login-register">
-        <button type="button" onClick={login}>Login</button>
-        <button type="button" onClick={register}>Sign Up</button>
+        <button type="button" className="login" onClick={login}>Login</button>
+        <button type="button" className="logout" onClick={register}>Sign Up</button>
       </div>
     );
   }
