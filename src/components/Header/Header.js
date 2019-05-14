@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import LabeledBadge from './LabeledBadge/LabeledBadge';
 import AccountMenu from './AccountMenu/AccountMenu';
+import AppContext from '../../AppContext';
 
 const Header = () => {
-  const [score, setScore] = useState(null);
-  const [rank, setRank] = useState(null);
+  const app = useContext(AppContext);
+  const score = useTraderScore(app.trader);
+  const rank = useTraderRank(app.trader);
 
   return (
     <div className="header">
@@ -25,5 +27,33 @@ const Header = () => {
     </div>
   );
 };
+
+function useTraderScore(trader) {
+  const [score, setScore] = useState(null);
+
+  useEffect(() => {
+    const getScore = async () => {
+      setScore(await trader.getScore());
+    };
+
+    getScore();
+  });
+
+  return score;
+}
+
+function useTraderRank(trader) {
+  const [rank, setRank] = useState(null);
+
+  useEffect(() => {
+    const getRank = async () => {
+      setRank(await trader.getRank());
+    };
+
+    getRank();
+  });
+
+  return rank;
+}
 
 export default Header;
