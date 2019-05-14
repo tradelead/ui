@@ -11,22 +11,15 @@ const AccountMenu = () => {
 
   const loggedIn = app.trader.id != null;
 
-  const defaultProfileThumbnail = `${process.env.PUBLIC_URL}/imgs/default-profile-thumbnail.png`;
-  const [profileThumbnail, setProfileThumbnail] = useState(defaultProfileThumbnail);
-  useEffect(() => {
-    (async () => {
-      if (app.trader.id) {
-        const { url } = await app.trader.get('profilePhoto', { size: 'thumbnail' });
-        setProfileThumbnail(url);
-      }
-    })();
-  }, [app.trader.id]);
+  const profileThumbnail = useTraderThumbnail(app.trader);
+
+  useOutsideClicksCloseMenu(setOpen);
 
   if (!loggedIn) {
     return (
       <div className="account-login-register">
         <button type="button" className="login" onClick={login}>Login</button>
-        <button type="button" className="logout" onClick={register}>Sign Up</button>
+        <button type="button" className="signup" onClick={register}>Sign Up</button>
       </div>
     );
   }
@@ -34,8 +27,9 @@ const AccountMenu = () => {
   return (
     <div className="account-menu-wrap">
       <button
-        aria-label={`${(!open) ? 'Close' : 'Open'} Account Dropdown`}
+        aria-label={`${(!open) ? 'Open' : 'Close'} Account Dropdown`}
         type="button"
+        className="toggle-account-menu"
         onClick={toggleOpen}
       >
         <div className="profilePhoto">
@@ -54,12 +48,43 @@ const AccountMenu = () => {
         <ul>
           <li><Link to="/account">Account Settings</Link></li>
           <li>
-            <button type="button" onClick={logout}>Logout</button>
+            <button type="button" className="logout" onClick={logout}>Logout</button>
           </li>
         </ul>
       </div>
     </div>
   );
 };
+
+function useTraderThumbnail(trader) {
+  const defaultProfileThumbnail = `${process.env.PUBLIC_URL}/imgs/default-profile-thumbnail.png`;
+  const [profileThumbnail, setProfileThumbnail] = useState(defaultProfileThumbnail);
+
+  useEffect(() => {
+    (async () => {
+      if (trader.id) {
+        const image = await trader.get('profilePhoto', { size: 'thumbnail' });
+        if (image) {
+          setProfileThumbnail(image.url);
+        }
+      }
+    })();
+  }, [trader.id]);
+
+  return profileThumbnail;
+}
+
+function useOutsideClicksCloseMenu(setOpen) {
+  useEffect(() => {
+    const shouldIfNotWithinMenu = (event) => {
+      if (!event.target.closest('.account-menu')) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener('click', shouldIfNotWithinMenu);
+    return () => document.removeEventListener('click', shouldIfNotWithinMenu);
+  }, []);
+}
 
 export default AccountMenu;
