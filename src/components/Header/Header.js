@@ -17,11 +17,11 @@ const Header = () => {
 
       <ul className="navigation">
         <li><Link to="/">Performance</Link></li>
-        <li><Link to="/leaderboard">Leaderboard</Link></li>
+        <li><Link to="/leaders">Leaders</Link></li>
       </ul>
 
-      {(score) ? <LabeledBadge label="Score" value={score} /> : ''}
-      {(rank) ? <LabeledBadge label="Rank" value={rank} /> : ''}
+      {(score) ? <LabeledBadge className="score" label="Score" value={score} /> : ''}
+      {(rank) ? <LabeledBadge className="rank" label="Rank" value={rank} /> : ''}
 
       <AccountMenu />
     </div>
@@ -36,8 +36,16 @@ function useTraderScore(trader) {
       setScore(await trader.getScore());
     };
 
-    getScore();
-  });
+    const scoreUpdates = () => trader.addListener('newScore', newScore => setScore(newScore));
+
+    if (trader.id) {
+      getScore();
+      const listener = scoreUpdates();
+      return () => listener.remove();
+    }
+
+    return () => {};
+  }, [trader.id]);
 
   return score;
 }
@@ -50,8 +58,16 @@ function useTraderRank(trader) {
       setRank(await trader.getRank());
     };
 
-    getRank();
-  });
+    const rankUpdates = () => trader.addListener('newRank', newRank => setRank(newRank));
+
+    if (trader.id) {
+      getRank();
+      const listener = rankUpdates();
+      return () => listener.remove();
+    }
+
+    return () => {};
+  }, [trader.id]);
 
   return rank;
 }

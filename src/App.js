@@ -13,7 +13,7 @@ function App() {
         <Header />
 
         <Route path="/" exact component={DashboardScreen} />
-        <Route path="/leaderboard" component={LeaderboardScreen} />
+        <Route path="/leaders" component={LeaderboardScreen} />
         <Route path="/trader/:id" component={TraderProfileScreen} />
         <Route path="/account" component={AccountScreen} />
       </div>
