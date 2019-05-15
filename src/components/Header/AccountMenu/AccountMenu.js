@@ -1,8 +1,9 @@
 import React, { useContext, useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import AppContext from '../../../AppContext';
 
-const AccountMenu = () => {
+const AccountMenu = ({ closeMenu }) => {
   const app = useContext(AppContext);
   const { register, login, logout } = app.auth;
 
@@ -18,8 +19,8 @@ const AccountMenu = () => {
   if (!loggedIn) {
     return (
       <div className="account-login-register">
-        <button type="button" className="login" onClick={login}>Login</button>
-        <button type="button" className="signup" onClick={register}>Sign Up</button>
+        <button type="button" className="login" onClick={() => { login(); closeMenu(); }}>Login</button>
+        <button type="button" className="signup" onClick={() => { register(); closeMenu(); }}>Sign Up</button>
       </div>
     );
   }
@@ -46,14 +47,22 @@ const AccountMenu = () => {
 
       <div className={`account-menu ${(open) ? 'account-menu-open' : ''}`}>
         <ul>
-          <li><Link to="/account">Account Settings</Link></li>
+          <li><Link onClick={closeMenu} to="/account">Account Settings</Link></li>
           <li>
-            <button type="button" className="logout" onClick={logout}>Logout</button>
+            <button type="button" className="logout" onClick={() => { logout(); closeMenu(); }}>Logout</button>
           </li>
         </ul>
       </div>
     </div>
   );
+};
+
+AccountMenu.propTypes = {
+  closeMenu: PropTypes.func,
+};
+
+AccountMenu.defaultProps = {
+  closeMenu: () => {},
 };
 
 function useTraderThumbnail(trader) {

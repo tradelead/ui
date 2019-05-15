@@ -33,13 +33,11 @@ const LineChart = (props) => {
     hideTooltip, // eslint-disable-line
     tooltipData, // eslint-disable-line
     tooltipLeft, // eslint-disable-line
-    tooltipTop, // eslint-disable-line
   } = props;
   const [pathRef, setPathRef] = useState(null);
 
   const activePoint = tooltipData;
   const activePointX = tooltipLeft;
-  const activePointY = tooltipTop;
 
   const xSelector = d => new Date(d.time);
   const ySelector = d => d.value;
@@ -117,7 +115,6 @@ const LineChart = (props) => {
           stroke="url(#gradient)"
           fill="url(#gradient)"
           curve={curveMonotoneX}
-          innerRef={setPathRef}
         />
 
         <LinePathMem
@@ -139,6 +136,7 @@ const LineChart = (props) => {
           curve={curveMonotoneX}
           strokeWidth={2}
           stroke="#1d72f8"
+          innerRef={setPathRef}
         />
 
         <g className="x-axis-legend-wrap">
@@ -178,7 +176,7 @@ const LineChart = (props) => {
             defaultStyle={{ opacity: 0, x: activePointX }}
             style={{
               opacity: spring(activePoint ? 1 : 0),
-              x: spring(activePointX),
+              x: spring(activePointX, presets.gentle),
             }}
           >
             {(style) => {
@@ -244,7 +242,7 @@ const LineChart = (props) => {
           defaultStyle={{ opacity: 0, x: activePointX }}
           style={{
             opacity: spring(activePoint ? 1 : 0),
-            x: spring(activePointX),
+            x: spring(activePointX, presets.gentle),
           }}
         >
           {(style) => {

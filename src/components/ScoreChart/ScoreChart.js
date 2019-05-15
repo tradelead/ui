@@ -45,7 +45,12 @@ const ScoreChart = ({ trader, width, height }) => {
         </div>
       </div>
 
-      <LineChart data={chartData} height={height} width={width} marginTop={5} />
+      <LineChart
+        data={chartData}
+        height={height}
+        width={width}
+        marginTop={determineMarginTop({ width, height })}
+      />
     </div>
   );
 };
@@ -64,6 +69,17 @@ function useTraderScoreHistory({ trader, duration }) {
   }, [trader.id, duration]);
 
   return scoreHistory;
+}
+
+function determineMarginTop({ width, height }) {
+  console.log(width, height, width < 1200, height < 500);
+  if (width < 1200) {
+    console.log('margin-top: 12');
+    return 15;
+  }
+
+  console.log('margin-top: 5');
+  return 5;
 }
 
 ScoreChart.propTypes = {

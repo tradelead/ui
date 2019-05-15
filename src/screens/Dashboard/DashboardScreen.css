@@ -1,3 +1,7 @@
 .score-line-chart {
     height: calc(100vh - 85px);
 }
+
+.dashboard-screen {
+    overflow: hidden;
+}

@@ -6,45 +6,31 @@ import AppContext from '../../AppContext';
 const DashboardScreen = () => {
   const app = useContext(AppContext);
   const [wrapEl, setWrapEl] = useState(null);
-  const height = useElHeight(wrapEl);
-  const width = useWindowWidth();
+  const { width, height } = useElSize(wrapEl);
 
   return (
     <div className="dashboard-screen" ref={el => setWrapEl(el)}>
-      <ScoreChart trader={app.trader} height={height} width={width} />
+      <ScoreChart trader={app.trader} width={width} height={height} />
     </div>
   );
 };
 
-function useWindowWidth() {
-  const [width, setWidth] = useState(0);
-
-  useEffect(() => {
-    const setWidthToWindow = () => setWidth(window.innerWidth);
-    setWidthToWindow();
-    window.addEventListener('resize', setWidthToWindow);
-    return () => window.removeEventListener('resize', setWidthToWindow);
-  }, []);
-
-  return width;
-}
-
-function useElHeight(el) {
+function useElSize(el) {
   const [height, setHeight] = useState(0);
-  console.log(el);
+  const [width, setWidth] = useState(0);
   useEffect(() => {
     if (el) {
-      console.log(el.clientHeight);
-      const setHeightToEl = () => setHeight(el.clientHeight);
-      setHeightToEl();
-      window.addEventListener('resize', setHeightToEl);
-      return () => window.removeEventListener('resize', setHeightToEl);
+      console.log('el size', el.clientWidth, el.clientHeight);
+      const setSizeToEl = () => { setWidth(el.clientWidth); setHeight(el.clientHeight); };
+      setSizeToEl();
+      window.addEventListener('resize', setSizeToEl);
+      return () => window.removeEventListener('resize', setSizeToEl);
     }
 
     return () => {};
   }, [el]);
 
-  return height;
+  return { width, height };
 }
 
 export default DashboardScreen;
