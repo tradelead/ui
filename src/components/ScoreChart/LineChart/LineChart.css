@@ -1,14 +1,56 @@
 .score-line-chart {
-    background: darkcyan;
+    background: white;
 }
 
-.score-chart {
-    position: relative;
+.y-axis-tick text {
+    font-size: 12px;
+    font-family: "Nunito Sans", sans-serif;
+    font-weight: 700;
+    fill: #868686;
 }
 
-.score-chart .chart-controls {
-    position: absolute;
-    top: 0;
-    width: 100%;
-    z-index: 1;
+.y-axis-tick line {
+    stroke: #868686;
+}
+
+.y-axis-line {
+    stroke: #868686;
+}
+
+.x-axis-tick text {
+    font-size: 12px;
+    font-family: "Nunito Sans", sans-serif;
+    font-weight: 700;
+    fill: #8686867d;
+}
+
+.x-axis-tick line {
+    stroke: #86868636;
+}
+
+.x-axis-line {
+    stroke: #8686865e;
+}
+
+g.x-axis-legend-wrap {
+    transform: translateY(-40px);
+}
+
+.x-axis-tooltip {
+    transform: translateY(-53px) translateX(-50%);
+    background: #2c2d70 !important;
+    color: #fff !important;
+    min-width: 110px;
+    text-align: center;
+}
+
+.y-axis-tooltip {
+    transform: translateX(-51px) translateY(-50%);
+    width: 51px;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #2c2d70 !important;
+    color: #fff !important;
+    text-align: center;
+    padding: 6px 0 !important;
 }

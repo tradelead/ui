@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
+import './ScoreChart.css';
 import Filters from './Filters';
 import LabeledBadge from './LabeledBadge';
 import LineChart from './LineChart/LineChart';
@@ -33,7 +34,7 @@ const ScoreChart = ({ trader, width, height }) => {
           filters={[
             { label: 'Today', value: 1 },
             { label: 'Week', value: 7 },
-            { label: 'Month', value: 30 },
+            { label: 'Month', value: 30, default: true },
             { label: 'All', value: 0 },
           ]}
         />

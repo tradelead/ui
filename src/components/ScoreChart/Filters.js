@@ -1,15 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
-const Filters = ({ onSelect, filters }) => (
-  <div className="chart-filters-wrap">
-    {filters.map(filter => (
-      <button key={filter.label} className={filter.label} type="button" onClick={() => onSelect(filter.value)}>
-        {filter.label}
-      </button>
-    ))}
-  </div>
-);
+const Filters = ({ onSelect, filters }) => {
+  const [activeFilter, setActiveFilter] = useState(null);
+  console.log(activeFilter);
+  return (
+    <div className="chart-filters-wrap">
+      {filters.map((filter) => {
+        return (
+          <button
+            type="button"
+            key={filter.label}
+            className={`${filter.label} ${(!activeFilter && filter.default) || (activeFilter && activeFilter.label === filter.label) ? 'active' : ''}`}
+            onClick={() => { onSelect(filter.value); setActiveFilter(filter); }}
+          >
+            {filter.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+};
 
 Filters.propTypes = {
   onSelect: PropTypes.func.isRequired,
@@ -19,6 +30,7 @@ Filters.propTypes = {
       PropTypes.string,
       PropTypes.number,
     ]).isRequired,
+    default: PropTypes.bool,
   })).isRequired,
 };
 

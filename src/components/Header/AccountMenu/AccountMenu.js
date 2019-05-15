@@ -77,7 +77,7 @@ function useTraderThumbnail(trader) {
 function useOutsideClicksCloseMenu(setOpen) {
   useEffect(() => {
     const shouldIfNotWithinMenu = (event) => {
-      if (!event.target.closest('.account-menu')) {
+      if (!event.target.closest('.account-menu-wrap')) {
         setOpen(false);
       }
     };

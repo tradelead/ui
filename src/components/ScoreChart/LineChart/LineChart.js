@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import './LineChart.css';
-import { AreaClosed, Line } from '@vx/shape';
+import { AreaClosed, Line, LinePath } from '@vx/shape';
 import { curveMonotoneX } from '@vx/curve';
 import { localPoint } from '@vx/event';
 import { scaleTime, scaleLinear } from '@vx/scale';
@@ -18,6 +18,7 @@ import moize from 'moize';
 import { Motion, spring, presets } from 'react-motion';
 import findPathYatX from '../../../utils/findPathYatX';
 
+const LinePathMem = moize.reactSimple(LinePath);
 const AreaClosedMem = moize.reactSimple(AreaClosed);
 const AxisRightMem = moize.reactSimple(AxisRight);
 const AxisBottomMem = moize.reactSimple(AxisBottom);
@@ -43,7 +44,7 @@ const LineChart = (props) => {
   const xSelector = d => new Date(d.time);
   const ySelector = d => d.value;
 
-  const marginRight = 60;
+  const marginRight = 50;
 
   const xMin = 0;
   const xMax = width - marginRight;
@@ -98,9 +99,13 @@ const LineChart = (props) => {
       <svg width={width} height={height}>
         <defs>
           <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#FFFFFF" stopOpacity={1} />
-            <stop offset="100%" stopColor="#FFFFFF" stopOpacity={0.2} />
+            <stop offset="0%" stopColor="#1d72f8" stopOpacity={0.8} />
+            <stop offset="100%" stopColor="#5502ff" stopOpacity={0.03} />
           </linearGradient>
+
+          <filter id="blur-filter" x="-2" y="-2" width="200" height="200">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="7" />
+          </filter>
         </defs>
 
         <AreaClosedMem
@@ -113,6 +118,27 @@ const LineChart = (props) => {
           fill="url(#gradient)"
           curve={curveMonotoneX}
           innerRef={setPathRef}
+        />
+
+        <LinePathMem
+          data={data}
+          x={d => xScale(xSelector(d))}
+          y={d => yScale(ySelector(d))}
+          yScale={yScale}
+          curve={curveMonotoneX}
+          strokeWidth={4}
+          stroke="#1d72f8"
+          style={{ filter: 'url(#blur-filter)', opacity: 0.7 }}
+        />
+
+        <LinePathMem
+          data={data}
+          x={d => xScale(xSelector(d))}
+          y={d => yScale(ySelector(d))}
+          yScale={yScale}
+          curve={curveMonotoneX}
+          strokeWidth={2}
+          stroke="#1d72f8"
         />
 
         <g className="x-axis-legend-wrap">
@@ -131,7 +157,7 @@ const LineChart = (props) => {
           />
         </g>
 
-        <g className="x-axis-legend-wrap">
+        <g className="y-axis-legend-wrap">
           <AxisRightMem
             axisClassName="y-axis-legend"
             tickClassName="y-axis-tick"
@@ -147,7 +173,7 @@ const LineChart = (props) => {
           />
         </g>
 
-        {pathRef && (
+        {pathRef && activePoint && (
           <Motion
             defaultStyle={{ opacity: 0, x: activePointX }}
             style={{
@@ -165,8 +191,8 @@ const LineChart = (props) => {
                     to={{ x: style.x, y: yMax }}
                     fillOpacity={style.opacity}
                     strokeOpacity={style.opacity}
-                    stroke="rgba(92, 119, 235, 1.000)"
-                    strokeWidth={2}
+                    stroke="rgba(92, 119, 235, 0.500)"
+                    strokeWidth={1}
                     style={{ pointerEvents: 'none' }}
                     strokeDasharray="2,2"
                   />
@@ -177,8 +203,8 @@ const LineChart = (props) => {
                     to={{ x: xMax, y }}
                     fillOpacity={style.opacity}
                     strokeOpacity={style.opacity}
-                    stroke="rgba(92, 119, 235, 1.000)"
-                    strokeWidth={2}
+                    stroke="rgba(92, 119, 235, 0.300)"
+                    strokeWidth={1}
                     style={{ pointerEvents: 'none' }}
                     strokeDasharray="2,2"
                   />
@@ -213,24 +239,37 @@ const LineChart = (props) => {
         />
       </svg>
 
-      {activePoint && (
-        <div className="chart-tooltips">
-          <Tooltip
-            className="x-axis-tooltip"
-            top={height}
-            left={activePointX}
-          >
-            {timeFormat('%b %d')(xSelector(activePoint))}
-          </Tooltip>
+      {pathRef && activePoint && (
+        <Motion
+          defaultStyle={{ opacity: 0, x: activePointX }}
+          style={{
+            opacity: spring(activePoint ? 1 : 0),
+            x: spring(activePointX),
+          }}
+        >
+          {(style) => {
+            const y = findPathYatX(style.x, pathRef);
+            return (
+              <div className="chart-tooltips">
+                <Tooltip
+                  className="x-axis-tooltip"
+                  top={height}
+                  left={style.x}
+                >
+                  {timeFormat('%b %d @ %I %p')(xSelector(activePoint))}
+                </Tooltip>
 
-          <Tooltip
-            className="y-axis-tooltip"
-            top={activePointY}
-            left={width}
-          >
-            {ySelector(activePoint)}
-          </Tooltip>
-        </div>
+                <Tooltip
+                  className="y-axis-tooltip"
+                  top={y}
+                  left={width}
+                >
+                  {ySelector(activePoint)}
+                </Tooltip>
+              </div>
+            );
+          }}
+        </Motion>
       )}
     </div>
   );

@@ -1,0 +1,164 @@
+.header {
+    background: #fff;
+    box-shadow: 0 0 24px #0000001a;
+    position: relative;
+    z-index: 10;
+}
+
+.header .header-inner {
+    display: flex;
+    max-width: 1500px;
+    margin: auto;
+    align-items: center;
+    height: 85px;
+}
+
+.header .branding img {
+    width: 200px;
+}
+
+.header .navigation {
+    display: flex;
+    list-style: none;
+    flex: 1;
+}
+
+.header .navigation a {
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 19px;
+    padding: 0 17px;
+    color: #0c0c0c;
+    text-decoration: none;
+}
+
+.header .navigation a:hover {
+    color: #535353;
+}
+
+.header .navigation a.active {
+    color: #2187fa;
+    font-weight: 700;
+}
+
+.account-menu-wrap {
+    position: relative;
+    margin-left: 20px;
+}
+
+.account-menu-wrap .account-menu {
+    position: absolute;
+    z-index: 1;
+}
+
+.account-menu-wrap .account-menu {
+    opacity: 0;
+}
+
+.account-menu-wrap .account-menu.open-account-menu {
+    opacity: 1;
+}
+
+.account-menu-wrap {
+    position: relative;
+}
+
+.account-menu-wrap .account-menu {
+    position: absolute;
+    opacity: 0;
+    z-index: 10;
+    right: 0;
+    margin-top: 10px;
+    background: #fff;
+    border-radius: 5px;
+    overflow: hidden;
+    width: 200px;
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+}
+
+.account-menu-wrap .account-menu.account-menu-open {
+    opacity: 1;
+}
+
+button.toggle-account-menu {
+    display: flex;
+    background: none;
+    border: none;
+    align-items: center;
+    outline: none;
+}
+
+button.toggle-account-menu .profilePhoto img {
+    width: 35px;
+}
+
+button.toggle-account-menu .profilePhoto {
+    background: #f5f5f5;
+    border-radius: 50%;
+    border: 1px solid #Ddd;
+}
+
+button.toggle-account-menu .down-arrow img {
+    width: 15px;
+    opacity: 0.3;
+}
+
+button.toggle-account-menu .down-arrow {
+    margin-left: 8px;
+}
+
+.account-menu-wrap .account-menu ul {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.account-menu-wrap .account-menu ul li a, .account-menu-wrap .account-menu ul li button {
+    background: #ffffff;
+    width: 100%;
+    border: none;
+    display: block;
+    text-align: center;
+    padding: 14px 0;
+    font-size: 13px;
+    text-decoration: none;
+    color: #2c2d70;
+    margin: 1px 0;
+    border-bottom: 1px solid #f1f1f1;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+}
+
+.account-menu-wrap .account-menu ul li:last-child a, .account-menu-wrap .account-menu ul li:last-child button {
+    border: none;
+}
+
+.header-labeled-badge {
+    padding: 10px;
+    text-align: center;
+}
+
+.header-labeled-badge .label {
+    color: #1e87fa;
+    text-transform: uppercase;
+    font-family: "Nunito Sans", sans-serif;
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    margin-bottom: 2px;
+}
+
+.header-labeled-badge .value {
+    /* Permalink - use to edit and share this gradient: https://colorzilla.com/gradient-editor/#2fb1ff+15,1d72f8+84 */
+    background: #2fb1ff; /* Old browsers */
+    background: -moz-linear-gradient(-45deg,  #2fb1ff 15%, #1d72f8 84%); /* FF3.6-15 */
+    background: -webkit-linear-gradient(-45deg,  #2fb1ff 15%,#1d72f8 84%); /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(135deg,  #2fb1ff 15%,#1d72f8 84%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2fb1ff', endColorstr='#1d72f8',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+
+    color: #fff;
+    font-weight: 600;
+    padding: 5px 25px;
+    border-radius: 4px;
+    font-size: 20px;
+}
