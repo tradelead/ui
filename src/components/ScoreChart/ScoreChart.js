@@ -4,7 +4,7 @@ import Filters from './Filters';
 import LabeledBadge from './LabeledBadge';
 import LineChart from './LineChart/LineChart';
 
-const ScoreChart = ({ trader }) => {
+const ScoreChart = ({ trader, width, height }) => {
   const [durationFilter, setDurationFilter] = useState(30);
 
   const scoreHistory = useTraderScoreHistory({ trader, duration: durationFilter });
@@ -27,20 +27,24 @@ const ScoreChart = ({ trader }) => {
 
   return (
     <div className="score-chart">
-      <Filters
-        onSelect={setDurationFilter}
-        filters={[
-          { label: 'Today', value: 1 },
-          { label: 'Week', value: 7 },
-          { label: 'Month', value: 30 },
-          { label: 'All', value: 0 },
-        ]}
-      />
+      <div className="chart-controls">
+        <Filters
+          onSelect={setDurationFilter}
+          filters={[
+            { label: 'Today', value: 1 },
+            { label: 'Week', value: 7 },
+            { label: 'Month', value: 30 },
+            { label: 'All', value: 0 },
+          ]}
+        />
 
-      <LabeledBadge className="growth" label="Growth" value={growth} />
-      <LabeledBadge className="daily-avg" label="Daily Avg" value={dailyAvg} />
+        <div className="labeled-badges">
+          <LabeledBadge className="growth" label="Growth" value={growth} />
+          <LabeledBadge className="daily-avg" label="Daily Avg" value={dailyAvg} />
+        </div>
+      </div>
 
-      <LineChart data={chartData} />
+      <LineChart data={chartData} height={height} width={width} marginTop={5} />
     </div>
   );
 };
@@ -69,6 +73,8 @@ ScoreChart.propTypes = {
     ]),
     subscribeToScoreHistory: PropTypes.func,
   }).isRequired,
+  height: PropTypes.number.isRequired,
+  width: PropTypes.number.isRequired,
 };
 
 export default ScoreChart;

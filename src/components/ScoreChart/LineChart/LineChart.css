@@ -1,0 +1,14 @@
+.score-line-chart {
+    background: darkcyan;
+}
+
+.score-chart {
+    position: relative;
+}
+
+.score-chart .chart-controls {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    z-index: 1;
+}

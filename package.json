@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@vx/axis": "0.0.184",
     "@vx/curve": "0.0.182",
     "@vx/event": "0.0.182",
     "@vx/scale": "0.0.182",
@@ -11,9 +12,11 @@
     "d3-array": "^2.0.3",
     "d3-time-format": "^2.1.3",
     "fbemitter": "^2.1.1",
+    "moize": "^5.4.4",
     "prop-types": "latest",
     "react": "^16.9.0-alpha.0",
     "react-dom": "^16.9.0-alpha.0",
+    "react-motion": "^0.5.2",
     "react-router-dom": "^5.0.0",
     "react-scripts": "3.0.1"
   },
