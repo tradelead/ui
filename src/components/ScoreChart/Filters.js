@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 const Filters = ({ onSelect, filters }) => {
   const [activeFilter, setActiveFilter] = useState(null);
-  console.log(activeFilter);
+
   return (
     <div className="chart-filters-wrap">
       {filters.map(filter => (

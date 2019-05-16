@@ -87,14 +87,11 @@ function useTraderScoreHistory({ trader, duration }) {
   return [scoreHistory, loading];
 }
 
-function determineMarginTop({ width, height }) {
-  console.log(width, height, width < 1200, height < 500);
+function determineMarginTop({ width }) {
   if (width < 1200) {
-    console.log('margin-top: 12');
     return 15;
   }
 
-  console.log('margin-top: 5');
   return 5;
 }
 

@@ -11,8 +11,7 @@ import AppContext from './AppContext';
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
-  console.log('menuOpen', menuOpen);
-  const closeMenu = () => { console.log('closeMenu'); setMenuOpen(false); };
+  const closeMenu = () => { setMenuOpen(false); };
 
   const sleep = async ms => new Promise(resolve => setTimeout(resolve, ms));
   const mockTrader = Object.assign(new EventEmitter(), {
@@ -51,7 +50,7 @@ function App() {
     },
     trader: mockTrader,
     traderScore: {
-      subscribeToTopTraders({ period, limit }, callback) {
+      subscribeToTopTraders({ limit }, callback) {
         const traders = new Array(limit).fill({
           trader: mockTrader,
           rank: 123,

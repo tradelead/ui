@@ -12,7 +12,7 @@ const Leaderboard = () => {
 
   return (
     <div className="leaderboard">
-      <ColumnsToTabs columns={3} tabBreakpoint={991}>
+      <ColumnsToTabs tabBreakpoint={991}>
         <ColumnTab label="All Time">
           <LeaderDisplay traders={allTimeTopTraders} loading={allTimeLoading} />
         </ColumnTab>

@@ -20,7 +20,6 @@ function useElSize(el) {
   const [width, setWidth] = useState(0);
   useEffect(() => {
     if (el) {
-      console.log('el size', el.clientWidth, el.clientHeight);
       const setSizeToEl = () => { setWidth(el.clientWidth); setHeight(el.clientHeight); };
       setSizeToEl();
       window.addEventListener('resize', setSizeToEl);
