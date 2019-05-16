@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
+import Spinner from 'react-bootstrap/Spinner';
+import TraderPropType from '../../propTypes/Trader';
 import './ScoreChart.css';
 import Filters from './Filters';
 import LabeledBadge from './LabeledBadge';
@@ -8,18 +10,21 @@ import LineChart from './LineChart/LineChart';
 const ScoreChart = ({ trader, width, height }) => {
   const [durationFilter, setDurationFilter] = useState(30);
 
-  const scoreHistory = useTraderScoreHistory({ trader, duration: durationFilter });
+  const [scoreHistory, scoreHistoryLoading] = useTraderScoreHistory({
+    trader,
+    duration: durationFilter,
+  });
   const firstScore = (scoreHistory.length > 0) ? scoreHistory[0] : {};
   const lastScore = (scoreHistory.length > 0) ? scoreHistory[scoreHistory.length - 1] : {};
   const growthRatio = (lastScore.score / firstScore.score);
   const growthPercent = ((growthRatio - 1) * 100).toFixed(1);
-  const growth = `${growthPercent}%`;
+  const growth = scoreHistory.length > 0 ? `${growthPercent}%` : '...';
 
   let historyDayDuration = (lastScore.time - firstScore.time) / (24 * 60 * 60 * 1000);
   historyDayDuration = (historyDayDuration > 1) ? historyDayDuration : 1;
   const dailyAvgValid = growthRatio > 0 && historyDayDuration > 0;
   const dailyAvgPercent = (dailyAvgValid) ? (growthPercent / historyDayDuration).toFixed(1) : 0;
-  const dailyAvg = `${dailyAvgPercent}%`;
+  const dailyAvg = growthRatio && historyDayDuration ? `${dailyAvgPercent}%` : '...';
 
   const chartData = scoreHistory.map(item => Object.assign({}, {
     time: item.time,
@@ -28,6 +33,12 @@ const ScoreChart = ({ trader, width, height }) => {
 
   return (
     <div className="score-chart">
+      {scoreHistoryLoading && (
+        <Spinner size="sm" animation="border" role="status">
+          <span className="sr-only">Loading...</span>
+        </Spinner>
+      )}
+
       <div className="chart-controls">
         <Filters
           onSelect={setDurationFilter}
@@ -57,18 +68,23 @@ const ScoreChart = ({ trader, width, height }) => {
 
 function useTraderScoreHistory({ trader, duration }) {
   const [scoreHistory, setScoreHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     if (trader.id) {
       return trader.subscribeToScoreHistory(
         { duration },
-        newScoreHistory => setScoreHistory(newScoreHistory),
+        (newScoreHistory) => {
+          setScoreHistory(newScoreHistory);
+          setLoading(false);
+        },
       );
     }
 
     return () => {};
   }, [trader.id, duration]);
 
-  return scoreHistory;
+  return [scoreHistory, loading];
 }
 
 function determineMarginTop({ width, height }) {
@@ -83,13 +99,7 @@ function determineMarginTop({ width, height }) {
 }
 
 ScoreChart.propTypes = {
-  trader: PropTypes.shape({
-    id: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.number,
-    ]),
-    subscribeToScoreHistory: PropTypes.func,
-  }).isRequired,
+  trader: TraderPropType.isRequired,
   height: PropTypes.number.isRequired,
   width: PropTypes.number.isRequired,
 };

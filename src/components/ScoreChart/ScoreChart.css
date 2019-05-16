@@ -2,6 +2,14 @@
     position: relative;
 }
 
+.score-chart .spinner-border {
+    position: absolute;
+    left: 50%;
+    z-index: 1;
+    top: 45px;
+    margin-left: -10px;
+}
+
 .score-chart .chart-controls {
     display: flex;
     position: absolute;
@@ -82,7 +90,7 @@
 @media screen and (max-width: 850px) {
     .score-chart .chart-controls {
         display: block;
-        width: calc(100% - 70px);
+        width: calc(100% - 50px);
         left: 0;
         transform: none;
         padding: 25px 10px;
@@ -109,5 +117,15 @@
     .score-chart-labeled-badge .label {
         font-size: 12px;
         flex: 1;
+    }
+
+    .score-chart .spinner-border {
+        position: absolute;
+        left: auto;
+        top: auto;
+        right: 19px;
+        z-index: 1;
+        bottom: 13px;
+        margin-left: -10px;
     }
 }

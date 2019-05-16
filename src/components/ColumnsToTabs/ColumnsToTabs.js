@@ -4,8 +4,10 @@ import React, {
   cloneElement,
   Children,
 } from 'react';
+import PropTypes from 'prop-types';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+import './ColumnsToTabs.css';
 
 export const ColumnsToTabs = ({ children, tabBreakpoint }) => {
   const [activeTab, setActiveTab] = useState(Children.toArray(children)[0]);
@@ -13,6 +15,7 @@ export const ColumnsToTabs = ({ children, tabBreakpoint }) => {
 
   const tabsNav = Children.map(children, child => ({
     label: child.props.label,
+    tabActive: activeTab.props && child.props.label === activeTab.props.label,
     showTab: () => { setActiveTab(child); },
   }));
 
@@ -25,8 +28,8 @@ export const ColumnsToTabs = ({ children, tabBreakpoint }) => {
     <div className={`columns-to-tabs-wrap ${(tabbed) ? 'tabs' : 'columns'}`}>
       {tabbed && (
         <div className="tab-navigation">
-          {tabsNav.map(({ label, showTab }) => (
-            <button type="button" onClick={showTab}>{label}</button>
+          {tabsNav.map(({ label, showTab, tabActive }) => (
+            <button type="button" className={tabActive && 'active'} onClick={showTab}>{label}</button>
           ))}
         </div>
       )}
@@ -38,19 +41,9 @@ export const ColumnsToTabs = ({ children, tabBreakpoint }) => {
   );
 };
 
-export const ColumnTab = ({ children, label, columnClassName, tabbed, tabActive }) => {
-  const columnClass = !tabbed ? columnClassName : '';
-  const tabActiveClass = (tabbed && tabActive) ? 'active' : '';
-
-  return (
-    <Col className={`column-tab ${columnClass} ${tabActiveClass}`}>
-      {!tabbed && (<h2>{label}</h2>)}
-
-      <div className="column-inner">
-        {children}
-      </div>
-    </Col>
-  );
+ColumnsToTabs.propTypes = {
+  children: PropTypes.element.isRequired,
+  tabBreakpoint: PropTypes.number.isRequired,
 };
 
 function useMediaQuery(mediaQuery) {
@@ -68,3 +61,38 @@ function useMediaQuery(mediaQuery) {
 
   return active;
 }
+
+export const ColumnTab = ({
+  children,
+  label,
+  columnClassName,
+  tabbed,
+  tabActive,
+}) => {
+  const columnClass = !tabbed ? columnClassName : '';
+  const tabActiveClass = (tabbed && tabActive) ? 'active' : '';
+
+  return (
+    <Col className={`column-tab ${columnClass} ${tabActiveClass}`}>
+      {!tabbed && (<h2>{label}</h2>)}
+
+      <div className="column-inner">
+        {children}
+      </div>
+    </Col>
+  );
+};
+
+ColumnTab.propTypes = {
+  children: PropTypes.element.isRequired,
+  label: PropTypes.string.isRequired,
+  columnClassName: PropTypes.string,
+  tabbed: PropTypes.bool,
+  tabActive: PropTypes.bool,
+};
+
+ColumnTab.defaultProps = {
+  columnClassName: '',
+  tabbed: false,
+  tabActive: false,
+};

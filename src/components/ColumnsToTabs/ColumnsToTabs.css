@@ -1,0 +1,29 @@
+.columns-to-tabs-wrap.tabs .column-tab.active {
+    display: block;
+}
+
+.columns-to-tabs-wrap.tabs .column-tab {
+    display: none;
+}
+
+.columns-to-tabs-wrap .tab-navigation {
+    margin-bottom: 32px;
+    text-align: center;
+}
+
+.columns-to-tabs-wrap .tab-navigation button {
+    background: none;
+    border: none;
+    outline: none;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 18px;
+    color: #777;
+    margin: 0 6px;
+    padding: 4px 20px;
+}
+
+.columns-to-tabs-wrap .tab-navigation button.active {
+    background: #1e87fa;
+    color: #fff;
+    border-radius: 4px;
+}

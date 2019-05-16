@@ -14,26 +14,32 @@ function App() {
   console.log('menuOpen', menuOpen);
   const closeMenu = () => { console.log('closeMenu'); setMenuOpen(false); };
 
+  const sleep = async ms => new Promise(resolve => setTimeout(resolve, ms));
   const mockTrader = Object.assign(new EventEmitter(), {
     id: 'trader123',
+    username: 'tradername123',
     get: async (key, args) => console.log('get', key, args),
     async getScore() {
+      await sleep(150); // random delay to simulate network request
       return 123;
     },
     async getRank() {
+      await sleep(150); // random delay to simulate network request
       return 12;
     },
     subscribeToScoreHistory(opts, callback) {
       const DAY_SEC = 24 * 60 * 60 * 1000;
-
-      callback([
+      const scoreHistory = [
         { time: Date.now() - DAY_SEC * 3, score: 100 },
         { time: Date.now() - DAY_SEC * 2.5, score: 115 },
         { time: Date.now() - DAY_SEC * 2, score: 125 },
         { time: Date.now() - DAY_SEC * 1.5, score: 105 },
         { time: Date.now() - DAY_SEC * 1.1, score: 150 },
         { time: Date.now() - DAY_SEC, score: 140 },
-      ]);
+      ];
+
+      // random delay to simulate network request
+      setTimeout(() => callback(scoreHistory), 280);
     },
   });
 
@@ -46,9 +52,14 @@ function App() {
     trader: mockTrader,
     traderScore: {
       subscribeToTopTraders({ period, limit }, callback) {
-        const traders = new Array(limit).fill(mockTrader);
+        const traders = new Array(limit).fill({
+          trader: mockTrader,
+          rank: 123,
+          score: 1234,
+        });
 
-        callback(traders);
+        // random delay to simulate network request
+        setTimeout(() => callback(traders), 300);
       },
     },
   };

@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import AppContext from '../../../AppContext';
+import TraderImg from '../../TraderImg/TraderImg';
 
 const AccountMenu = ({ closeMenu }) => {
   const app = useContext(AppContext);
@@ -11,8 +12,6 @@ const AccountMenu = ({ closeMenu }) => {
   const toggleOpen = () => setOpen(!open);
 
   const loggedIn = app.trader.id != null;
-
-  const profileThumbnail = useTraderThumbnail(app.trader);
 
   useOutsideClicksCloseMenu(setOpen);
 
@@ -34,7 +33,7 @@ const AccountMenu = ({ closeMenu }) => {
         onClick={toggleOpen}
       >
         <div className="profilePhoto">
-          <img src={profileThumbnail} alt="Your Profile Pic" />
+          <TraderImg trader={app.trader} size="thumbnail" />
         </div>
 
         <div className="down-arrow">
@@ -64,24 +63,6 @@ AccountMenu.propTypes = {
 AccountMenu.defaultProps = {
   closeMenu: () => {},
 };
-
-function useTraderThumbnail(trader) {
-  const defaultProfileThumbnail = `${process.env.PUBLIC_URL}/imgs/default-profile-thumbnail.png`;
-  const [profileThumbnail, setProfileThumbnail] = useState(defaultProfileThumbnail);
-
-  useEffect(() => {
-    (async () => {
-      if (trader.id) {
-        const image = await trader.get('profilePhoto', { size: 'thumbnail' });
-        if (image) {
-          setProfileThumbnail(image.url);
-        }
-      }
-    })();
-  }, [trader.id]);
-
-  return profileThumbnail;
-}
 
 function useOutsideClicksCloseMenu(setOpen) {
   useEffect(() => {

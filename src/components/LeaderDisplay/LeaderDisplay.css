@@ -1,0 +1,94 @@
+.leader-display {
+    background: #fff;
+    box-shadow: 0 0 20px #00000024;
+    border-radius: 5px;
+    display: table;
+    width: 100%;
+    position: relative;
+}
+
+.leader-display > .leaders-header,
+.leader-display > .leader {
+    display: table-row;
+}
+
+.leader-display > .leaders-header > *,
+.leader-display > .leader > * {
+    display: table-cell;
+    border-bottom: 1px solid #e8e7e7;
+    font-family: "Nunito Sans", sans-serif;
+    padding: 11px 8px;
+    font-size: 13px;
+    vertical-align: middle;
+}
+
+.leader-display > .leaders-header > * {
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: #7b7b7b;
+}
+
+.leader-display .trader {
+    padding-left: 24px;
+}
+
+.leader-display .spinner-border {
+    position: absolute;
+    left: calc(50% - 10px);
+    top: -25px;
+}
+
+.leader-display .trader img {
+    width: 28px;
+    background: #ddd;
+    border-radius: 100px;
+    margin-right: 8PX;
+}
+
+.leader-display .trader * {
+    display: inline-block;
+}
+
+.leader-display .trader .username {
+    font-size: 15px;
+}
+
+.leader-display .trader .username.long {
+    font-family: 'Barlow Semi Condensed', sans-serif;
+    font-size: 13.5px;
+}
+
+.leader-display .leader .rank,
+.leader-display .leader .score {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.leader-display .leader .rank {
+    color: #2c2d70;
+}
+
+.leader-display .leader .score {
+    color: #1e87fa;
+}
+
+@media screen and (max-width: 1200px) {
+    .leader-display .leader .rank,
+    .leader-display .leader .score {
+        font-size: 17px;
+    }
+
+    .leader-display > .leaders-header > * {
+        letter-spacing: 0.2px;
+    }
+
+    .leader-display > .leaders-header > *,
+    .leader-display > .leader > * {
+        padding: 8px 6px;
+    }
+
+    .leader-display .trader {
+        padding-left: 15px;
+    }
+}
