@@ -14,34 +14,43 @@ function App() {
   console.log('menuOpen', menuOpen);
   const closeMenu = () => { console.log('closeMenu'); setMenuOpen(false); };
 
+  const mockTrader = Object.assign(new EventEmitter(), {
+    id: 'trader123',
+    get: async (key, args) => console.log('get', key, args),
+    async getScore() {
+      return 123;
+    },
+    async getRank() {
+      return 12;
+    },
+    subscribeToScoreHistory(opts, callback) {
+      const DAY_SEC = 24 * 60 * 60 * 1000;
+
+      callback([
+        { time: Date.now() - DAY_SEC * 3, score: 100 },
+        { time: Date.now() - DAY_SEC * 2.5, score: 115 },
+        { time: Date.now() - DAY_SEC * 2, score: 125 },
+        { time: Date.now() - DAY_SEC * 1.5, score: 105 },
+        { time: Date.now() - DAY_SEC * 1.1, score: 150 },
+        { time: Date.now() - DAY_SEC, score: 140 },
+      ]);
+    },
+  });
+
   const ctx = {
     auth: {
       login: () => console.log('login'),
       register: () => console.log('register'),
       logout: () => console.log('logout'),
     },
-    trader: Object.assign(new EventEmitter(), {
-      id: 'trader123',
-      get: async (key, args) => console.log('get', key, args),
-      async getScore() {
-        return 123;
-      },
-      async getRank() {
-        return 12;
-      },
-      subscribeToScoreHistory(opts, callback) {
-        const DAY_SEC = 24 * 60 * 60 * 1000;
+    trader: mockTrader,
+    traderScore: {
+      subscribeToTopTraders({ period, limit }, callback) {
+        const traders = new Array(limit).fill(mockTrader);
 
-        callback([
-          { time: Date.now() - DAY_SEC * 3, score: 100 },
-          { time: Date.now() - DAY_SEC * 2.5, score: 115 },
-          { time: Date.now() - DAY_SEC * 2, score: 125 },
-          { time: Date.now() - DAY_SEC * 1.5, score: 105 },
-          { time: Date.now() - DAY_SEC * 1.1, score: 150 },
-          { time: Date.now() - DAY_SEC, score: 140 },
-        ]);
+        callback(traders);
       },
-    }),
+    },
   };
 
   return (
