@@ -6,18 +6,16 @@ const Filters = ({ onSelect, filters }) => {
   console.log(activeFilter);
   return (
     <div className="chart-filters-wrap">
-      {filters.map((filter) => {
-        return (
-          <button
-            type="button"
-            key={filter.label}
-            className={`${filter.label} ${(!activeFilter && filter.default) || (activeFilter && activeFilter.label === filter.label) ? 'active' : ''}`}
-            onClick={() => { onSelect(filter.value); setActiveFilter(filter); }}
-          >
-            {filter.label}
-          </button>
-        );
-      })}
+      {filters.map(filter => (
+        <button
+          type="button"
+          key={filter.label}
+          className={`${filter.label} ${(!activeFilter && filter.default) || (activeFilter && activeFilter.label === filter.label) ? 'active' : ''}`}
+          onClick={() => { onSelect(filter.value); setActiveFilter(filter); }}
+        >
+          {filter.label}
+        </button>
+      ))}
     </div>
   );
 };
