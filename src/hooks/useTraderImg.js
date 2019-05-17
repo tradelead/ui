@@ -7,9 +7,9 @@ export default function useTraderImg(trader, size) {
   useEffect(() => {
     (async () => {
       if (trader.id) {
-        const image = await trader.get('profilePhoto', { size });
-        if (image) {
-          setProfileThumbnail(image.url);
+        const info = await trader.get([{ key: 'profilePhoto', size }]);
+        if (info && info.profilePhoto) {
+          setProfileThumbnail(info.profilePhoto.url);
         }
       }
     })();

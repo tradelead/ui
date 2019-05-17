@@ -5,6 +5,7 @@ import Form from 'react-bootstrap/Form';
 import Alert from 'react-bootstrap/Alert';
 import Spinner from 'react-bootstrap/Spinner';
 import Card from 'react-bootstrap/Card';
+import { FaTrashAlt } from 'react-icons/fa';
 import AppContext from '../../../AppContext';
 
 const ExchangeKeys = () => {
@@ -28,13 +29,38 @@ const ExchangeKeys = () => {
     setAddingKey(true);
     try {
       const exchangeKey = await app.trader.addExchangeKey({ exchangeID, token, secret });
-      setExchangeKeys([...exchangeKeys, exchangeKey]);
+      setExchangeKeys(curKeys => (curKeys ? [...curKeys, exchangeKey] : [exchangeKey]));
       setShowModal(false);
     } catch (e) {
       setAddKeyError(e.message);
     }
 
     setAddingKey(false);
+  };
+
+  const updateExchangeKeyState = (curExchangeID, updateData) => {
+    setExchangeKeys((keys) => {
+      const keysDup = keys.slice(0);
+      const curIndex = keys.findIndex(key => key.exchangeID === curExchangeID);
+      keysDup[curIndex] = Object.assign({}, keysDup[curIndex], updateData);
+      return keysDup;
+    });
+  };
+
+  const deleteExchangeKey = (deleteKey) => {
+    (async () => {
+      updateExchangeKeyState(deleteKey.exchangeID, { deleting: true });
+
+      try {
+        await app.trader.deleteExchangeKey({ exchangeID: deleteKey.exchangeID });
+        setExchangeKeys(curKeys => curKeys.filter(key => key.exchangeID !== deleteKey.exchangeID));
+      } catch (e) {
+        updateExchangeKeyState(deleteKey.exchangeID, {
+          deletingError: e.message,
+          deleting: false,
+        });
+      }
+    })();
   };
 
   return (
@@ -63,10 +89,37 @@ const ExchangeKeys = () => {
                   ****
                   {key.secretLast4}
                 </div>
+                <button
+                  aria-label={`Delete ${key.exchangeLabel}`}
+                  type="button"
+                  className={`delete ${(key.deleting) ? 'deleting' : ''}`}
+                  onClick={() => deleteExchangeKey(key)}
+                >
+                  <FaTrashAlt />
+                  {key.deleting && (
+                    <>
+                      <Spinner
+                        className="delete-loading"
+                        as="span"
+                        animation="border"
+                        size="sm"
+                        role="status"
+                        aria-hidden="true"
+                      />
+                      <span className="sr-only">Loading...</span>
+                    </>
+                  )}
+                </button>
+
+                {key.deletingError && (
+                  <Alert dismissible className="error" variant="danger">
+                    Error Deleting:
+                    {key.deletingError}
+                  </Alert>
+                )}
               </div>
             ))}
           </div>
-          <Button variant="primary">Go somewhere</Button>
         </Card.Body>
       </Card>
 

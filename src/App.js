@@ -17,7 +17,7 @@ function App() {
   const mockTrader = Object.assign(new EventEmitter(), {
     id: 'trader123',
     username: 'tradername123',
-    get: async () => {},
+    get: async () => ({}),
     async getScore() {
       await sleep(150); // random delay to simulate network request
       return 123;

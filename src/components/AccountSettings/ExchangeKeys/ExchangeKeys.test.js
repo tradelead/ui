@@ -244,8 +244,92 @@ it('shows error when fails to get current keys', async () => {
   expect(wrapper.find('.exchange-keys .error')).toExist();
 });
 
-it('calls delete key when ', async () => {
+describe('delete key', () => {
+  const expectedKeys = [
+    {
+      exchangeID: 'binance',
+      exchangeLabel: 'Binance',
+      tokenLast4: 'aEwq',
+      secretLast4: 'PqnB',
+    },
+    {
+      exchangeID: 'bittrex',
+      exchangeLabel: 'Bittrex',
+      tokenLast4: '24aq',
+      secretLast4: '4elH',
+    },
+  ];
 
+  const mountAndClickDeleteOnFirstKey = async () => {
+    let wrapper = null;
+    await act(async () => {
+      const component = setup();
+      wrapper = mount(component);
+      await sleep(0);
+      wrapper.update();
+      await sleep(0);
+    });
+
+    await act(async () => {
+      wrapper.find('.exchange-key .delete').first().simulate('click');
+    });
+
+    return wrapper;
+  };
+
+  beforeEach(() => {
+    ctx.trader.getExchangeKeys.resolves(expectedKeys);
+  });
+
+  it('calls deleteExchangeKey', async () => {
+    await mountAndClickDeleteOnFirstKey();
+
+    sinon.assert.calledWith(
+      ctx.trader.deleteExchangeKey,
+      { exchangeID: expectedKeys[0].exchangeID },
+    );
+  });
+
+  it('marks loading while await response', async () => {
+    ctx.trader.deleteExchangeKey.returns(sleep(100));
+
+    const wrapper = await mountAndClickDeleteOnFirstKey();
+
+    await act(async () => {
+      wrapper.update();
+      await sleep(0);
+    });
+
+    expect(wrapper.find('.exchange-key .delete').first().find('.delete-loading')).toExist();
+  });
+
+  it('marks not loading after response', async () => {
+    ctx.trader.deleteExchangeKey.returns(sleep(100));
+
+    const wrapper = await mountAndClickDeleteOnFirstKey();
+
+    await act(async () => {
+      await sleep(100);
+      wrapper.update();
+      await sleep(0);
+    });
+
+    expect(wrapper.find('.exchange-key .delete').first().find('.delete-loading')).toHaveLength(0);
+  });
+
+  it('displays error if request fails', async () => {
+    const error = 'this is my error';
+    ctx.trader.deleteExchangeKey.rejects(new Error(error));
+
+    const wrapper = await mountAndClickDeleteOnFirstKey();
+
+    await act(async () => {
+      wrapper.update();
+      await sleep(0);
+    });
+
+    expect(wrapper.find('.exchange-key').first().find('div.error').text()).toContain(error);
+  });
 });
 
 async function submitAddKeyForm(wrapper, data) {
