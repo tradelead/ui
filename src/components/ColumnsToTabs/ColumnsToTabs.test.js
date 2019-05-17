@@ -44,9 +44,6 @@ describe('columns', () => {
 });
 
 function hasClass(wrapper, className) {
-  console.log(wrapper
-    .prop('className')
-    .split(' '));
   return wrapper
     .prop('className')
     .split(' ')

@@ -11,7 +11,7 @@ jest.mock('./LineChart/LineChart', () => (
 // eslint-disable-next-line react/prop-types
 function setup({ trader }) {
   return {
-    component: <ScoreChart trader={trader} />,
+    component: <ScoreChart height={800} width={1920} trader={trader} />,
   };
 }
 

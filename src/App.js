@@ -17,7 +17,7 @@ function App() {
   const mockTrader = Object.assign(new EventEmitter(), {
     id: 'trader123',
     username: 'tradername123',
-    get: async (key, args) => console.log('get', key, args),
+    get: async () => {},
     async getScore() {
       await sleep(150); // random delay to simulate network request
       return 123;
@@ -31,6 +31,7 @@ function App() {
       const scoreHistory = [
         { time: Date.now() - DAY_SEC * 3, score: 100 },
         { time: Date.now() - DAY_SEC * 2.5, score: 115 },
+        { time: Date.now() - DAY_SEC * 2.49, score: 110 },
         { time: Date.now() - DAY_SEC * 2, score: 125 },
         { time: Date.now() - DAY_SEC * 1.5, score: 105 },
         { time: Date.now() - DAY_SEC * 1.1, score: 150 },
@@ -44,9 +45,9 @@ function App() {
 
   const ctx = {
     auth: {
-      login: () => console.log('login'),
-      register: () => console.log('register'),
-      logout: () => console.log('logout'),
+      login: () => {},
+      register: () => {},
+      logout: () => {},
     },
     trader: mockTrader,
     traderScore: {

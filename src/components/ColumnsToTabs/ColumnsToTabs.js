@@ -29,7 +29,14 @@ export const ColumnsToTabs = ({ children, tabBreakpoint }) => {
       {tabbed && (
         <div className="tab-navigation">
           {tabsNav.map(({ label, showTab, tabActive }) => (
-            <button type="button" className={tabActive && 'active'} onClick={showTab}>{label}</button>
+            <button
+              key={label}
+              type="button"
+              className={tabActive ? 'active' : ''}
+              onClick={showTab}
+            >
+              {label}
+            </button>
           ))}
         </div>
       )}
@@ -42,7 +49,7 @@ export const ColumnsToTabs = ({ children, tabBreakpoint }) => {
 };
 
 ColumnsToTabs.propTypes = {
-  children: PropTypes.element.isRequired,
+  children: PropTypes.node.isRequired,
   tabBreakpoint: PropTypes.number.isRequired,
 };
 

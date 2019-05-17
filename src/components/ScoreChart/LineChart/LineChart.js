@@ -15,7 +15,7 @@ import {
 } from 'd3-array';
 import { timeFormat } from 'd3-time-format';
 import moize from 'moize';
-import { Motion, spring, presets } from 'react-motion';
+import { Motion, spring } from 'react-motion';
 import findPathYatX from '../../../utils/findPathYatX';
 
 const LinePathMem = moize.reactSimple(LinePath);
@@ -121,7 +121,6 @@ const LineChart = (props) => {
           data={data}
           x={d => xScale(xSelector(d))}
           y={d => yScale(ySelector(d))}
-          yScale={yScale}
           curve={curveMonotoneX}
           strokeWidth={4}
           stroke="#1d72f8"
@@ -132,7 +131,6 @@ const LineChart = (props) => {
           data={data}
           x={d => xScale(xSelector(d))}
           y={d => yScale(ySelector(d))}
-          yScale={yScale}
           curve={curveMonotoneX}
           strokeWidth={2}
           stroke="#1d72f8"
@@ -176,7 +174,7 @@ const LineChart = (props) => {
             defaultStyle={{ opacity: 0, x: activePointX }}
             style={{
               opacity: spring(activePoint ? 1 : 0),
-              x: spring(activePointX, presets.gentle),
+              x: spring(activePointX),
             }}
           >
             {(style) => {
@@ -242,7 +240,7 @@ const LineChart = (props) => {
           defaultStyle={{ opacity: 0, x: activePointX }}
           style={{
             opacity: spring(activePoint ? 1 : 0),
-            x: spring(activePointX, presets.gentle),
+            x: spring(activePointX),
           }}
         >
           {(style) => {

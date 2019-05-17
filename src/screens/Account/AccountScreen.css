@@ -1,0 +1,17 @@
+.account-screen {
+    padding-top: 50px;
+}
+
+.account-screen h1 {
+    text-align: center;
+}
+
+.account-screen .container {
+    max-width: 800px;
+}
+
+@media screen and (max-width: 767px) {
+    .account-screen {
+        padding-top: 30px;
+    }
+}
