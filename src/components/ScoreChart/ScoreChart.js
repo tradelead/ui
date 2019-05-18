@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import Spinner from 'react-bootstrap/Spinner';
+import { timeFormat } from 'd3-time-format';
 import TraderPropType from '../../propTypes/Trader';
 import './ScoreChart.css';
 import Filters from './Filters';
@@ -28,6 +29,8 @@ const ScoreChart = ({ trader, width, height }) => {
 
   const chartData = scoreHistory.map(item => Object.assign({}, {
     time: item.time,
+    date: new Date(item.time),
+    dateFormatted: timeFormat('%b %d @ %I %p')(new Date(item.time)),
     value: item.score,
   }));
 

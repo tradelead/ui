@@ -54,3 +54,31 @@ g.x-axis-legend-wrap {
     text-align: center;
     padding: 6px 0 !important;
 }
+
+.chart-tooltips {
+    position: absolute;
+    left: calc(50% - 25px);
+    transform: translateX(-50%);
+    top: 39px;
+    z-index: 10;
+    display: block;
+}
+
+.chart-tooltips > * {
+    transform: translateY(-53px) translateX(-50%);
+    background: #0000000d !important;
+    color: #2c2d70 !important;
+    text-align: center;
+    border-radius: 4px;
+    font-size: 13px;
+    padding: 4px 10px;
+    display: inline;
+    margin: 0 3px;
+}
+
+@media screen and (max-width: 1200px) {
+    .chart-tooltips {
+        top: auto;
+        bottom: 50px;
+    }
+}

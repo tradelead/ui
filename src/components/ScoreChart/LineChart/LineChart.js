@@ -6,22 +6,27 @@ import { curveMonotoneX } from '@vx/curve';
 import { localPoint } from '@vx/event';
 import { scaleTime, scaleLinear } from '@vx/scale';
 import { AxisRight, AxisBottom } from '@vx/axis';
-import { withTooltip, Tooltip } from '@vx/tooltip';
+import { withTooltip } from '@vx/tooltip';
+
 import {
   extent,
   max,
   min,
   bisector,
 } from 'd3-array';
-import { timeFormat } from 'd3-time-format';
 import moize from 'moize';
 import { Motion, spring } from 'react-motion';
 import findPathYatX from '../../../utils/findPathYatX';
 
+const LineMem = moize.reactSimple(Line);
 const LinePathMem = moize.reactSimple(LinePath);
 const AreaClosedMem = moize.reactSimple(AreaClosed);
 const AxisRightMem = moize.reactSimple(AxisRight);
 const AxisBottomMem = moize.reactSimple(AxisBottom);
+
+const xSelector = d => d.date;
+const ySelector = d => d.value;
+
 
 const LineChart = (props) => {
   const {
@@ -30,7 +35,6 @@ const LineChart = (props) => {
     height,
     marginTop,
     showTooltip, // eslint-disable-line
-    hideTooltip, // eslint-disable-line
     tooltipData, // eslint-disable-line
     tooltipLeft, // eslint-disable-line
   } = props;
@@ -38,9 +42,6 @@ const LineChart = (props) => {
 
   const activePoint = tooltipData;
   const activePointX = tooltipLeft;
-
-  const xSelector = d => new Date(d.time);
-  const ySelector = d => d.value;
 
   const marginRight = 50;
 
@@ -52,45 +53,23 @@ const LineChart = (props) => {
 
   const xScale = useXScale({
     data,
-    xSelector,
     xMax,
   });
 
   const yScale = useYScale({
     data,
-    ySelector,
     yMax,
     marginTop,
   });
 
-  const chartMouseAndTouchHandler = end => (event) => {
-    if (end) {
-      hideTooltip();
-      return;
-    }
-
-    const { x } = localPoint(event);
-    const xVal = xScale.invert(x);
-
-    const xBisect = bisector(xSelector).left;
-    const index = xBisect(data, xVal, 1);
-
-    const d0 = data[index - 1];
-    const d1 = data[index];
-
-    if (!d0) { return; }
-
-    const d1ClosestToVal = d1 && xVal - xSelector(d0) > xSelector(d1) - xVal;
-    const d = d1ClosestToVal ? d1 : d0;
-
-    showTooltip({
-      tooltipData: d,
-      tooltipLeft: xScale(xSelector(d)),
-      tooltipTop: yScale(ySelector(d)),
-    });
-  };
-
   if (!xScale || !yScale) { return (<div className="score-line-chart" />); }
+
+  const interactiveMoveHandler = chartMouseAndTouchHandler({
+    end: false,
+    showTooltip,
+    xScale,
+    data,
+  });
 
   return (
     <div className="score-line-chart">
@@ -181,7 +160,7 @@ const LineChart = (props) => {
               const y = findPathYatX(style.x, pathRef);
               return (
                 <g className="crosshairs">
-                  <Line
+                  <LineMem
                     className="y-axis"
                     from={{ x: style.x, y: yMin }}
                     to={{ x: style.x, y: yMax }}
@@ -193,7 +172,7 @@ const LineChart = (props) => {
                     strokeDasharray="2,2"
                   />
 
-                  <Line
+                  <LineMem
                     className="x-axis"
                     from={{ x: xMin, y }}
                     to={{ x: xMax, y }}
@@ -228,44 +207,18 @@ const LineChart = (props) => {
           width={width}
           height={height}
           fill="transparent"
-          onTouchStart={chartMouseAndTouchHandler()}
-          onTouchMove={chartMouseAndTouchHandler()}
-          onMouseMove={chartMouseAndTouchHandler()}
-          onMouseLeave={chartMouseAndTouchHandler(true)}
+          onTouchStart={interactiveMoveHandler}
+          onTouchMove={interactiveMoveHandler}
+          onMouseMove={interactiveMoveHandler}
+          onMouseLeave={interactiveMoveHandler}
         />
       </svg>
 
       {pathRef && activePoint && (
-        <Motion
-          defaultStyle={{ opacity: 0, x: activePointX }}
-          style={{
-            opacity: spring(activePoint ? 1 : 0),
-            x: spring(activePointX),
-          }}
-        >
-          {(style) => {
-            const y = findPathYatX(style.x, pathRef);
-            return (
-              <div className="chart-tooltips">
-                <Tooltip
-                  className="x-axis-tooltip"
-                  top={height}
-                  left={style.x}
-                >
-                  {timeFormat('%b %d @ %I %p')(xSelector(activePoint))}
-                </Tooltip>
-
-                <Tooltip
-                  className="y-axis-tooltip"
-                  top={y}
-                  left={width}
-                >
-                  {ySelector(activePoint)}
-                </Tooltip>
-              </div>
-            );
-          }}
-        </Motion>
+        <div className="chart-tooltips">
+          <div className="date">{activePoint.dateFormatted}</div>
+          <div className="score">{ySelector(activePoint)}</div>
+        </div>
       )}
     </div>
   );
@@ -285,7 +238,7 @@ LineChart.defaultProps = {
   marginTop: 10,
 };
 
-function useXScale({ data, xSelector, xMax }) {
+function useXScale({ data, xMax }) {
   const [xScale, setXScale] = useState(null);
   useEffect(() => {
     const xScaleFn = scaleTime({
@@ -300,7 +253,6 @@ function useXScale({ data, xSelector, xMax }) {
 
 function useYScale({
   data,
-  ySelector,
   yMax,
   marginTop,
 }) {
@@ -321,6 +273,43 @@ function useYScale({
   }, [data]);
 
   return yScale;
+}
+
+function chartMouseAndTouchHandler({
+  end,
+  hideTooltip,
+  showTooltip,
+  xScale,
+  data,
+}) {
+  return (event) => {
+    if (end) {
+      hideTooltip();
+      return;
+    }
+
+    const { x } = localPoint(event);
+    const xVal = xScale.invert(x);
+
+    const xBisect = bisector(xSelector).left;
+    const index = xBisect(data, xVal, 1);
+
+    const d0 = data[index - 1];
+    const d1 = data[index];
+
+    if (!d0) {
+      return;
+    }
+
+    const d1ClosestToVal = d1 && xVal - xSelector(d0) > xSelector(d1) - xVal;
+    const d = d1ClosestToVal ? d1 : d0;
+
+    showTooltip({
+      tooltipData: d,
+      tooltipLeft: xScale(xSelector(d)),
+      tooltipTop: 0,
+    });
+  };
 }
 
 function numTicksForHeight(height) {
