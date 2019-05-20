@@ -1,0 +1,70 @@
+.traderInfo::before {
+    content: "";
+    display: block;
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 203px;
+    z-index: -1;
+    clip-path: circle(153% at 50% -122%);
+    background: #1d72f8;
+    background: linear-gradient(135deg, #2fb1ff 15%,#1d72f8 84%);
+}
+
+.traderInfo::before {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 203px;
+    z-index: 1;
+    clip-path: circle(153% at 50% -122%);
+    background: #1d72f8;
+    background: linear-gradient(135deg, #2fb1ff 15%,#1d72f8 84%);
+}
+
+.traderInfo .profilePhoto img {
+    width: 100%;
+}
+
+.traderInfo .profilePhoto {
+    width: 175px;
+    background: #eee;
+    border-radius: 100%;
+    overflow: hidden;
+    margin-bottom: 16px;
+    border: 2px solid #FFF;
+    box-shadow: 0 0 35px #00000026;
+    position: relative;
+    z-index: 2;
+}
+
+.traderInfo {
+    padding: 50px 30px 30px;
+}
+
+.traderInfo .username {
+    color: #2c2f6e;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 22px;
+}
+
+.traderInfo .bio {
+    font-size: 13px;
+    color: #444;
+    margin-top: 14px;
+}
+
+.traderInfo a.website {
+    font-family: "Nunito Sans", sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    margin-top: 15px;
+    display: block;
+}
+
+.traderInfo a.website svg {
+    margin-right: 10px;
+}

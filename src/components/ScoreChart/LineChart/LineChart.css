@@ -59,7 +59,7 @@ g.x-axis-legend-wrap {
     position: absolute;
     left: calc(50% - 25px);
     transform: translateX(-50%);
-    top: 39px;
+    bottom: 64px;
     z-index: 10;
     display: block;
 }
@@ -74,6 +74,15 @@ g.x-axis-legend-wrap {
     padding: 4px 10px;
     display: inline;
     margin: 0 3px;
+}
+
+@media screen and (min-width: 992px) {
+    .chart-tooltips > * {
+        font-size: 16px;
+        padding: 7px 14px;
+        display: inline;
+        margin: 0 7px;
+    }
 }
 
 @media screen and (max-width: 1200px) {

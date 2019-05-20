@@ -7,6 +7,7 @@ import Spinner from 'react-bootstrap/Spinner';
 import Card from 'react-bootstrap/Card';
 import { FaTrashAlt } from 'react-icons/fa';
 import AppContext from '../../../AppContext';
+import './ExchangeKeys.css';
 
 const ExchangeKeys = () => {
   const app = useContext(AppContext);
@@ -16,13 +17,15 @@ const ExchangeKeys = () => {
   const [showModal, setShowModal] = useState(false);
   const [addKeyError, setAddKeyError] = useState('');
   const [addingKey, setAddingKey] = useState(false);
-  const [exchangeID, setExchangeID] = useState('');
+  const [exchangeID, setExchangeID] = useState('binance');
   const [token, setToken] = useState('');
   const [secret, setSecret] = useState('');
 
   useTraderExchangeKeys({ trader: app.trader, setExchangeKeys, setFetchKeysError });
 
-  const addExchangeKey = async () => {
+  const addExchangeKey = async (e) => {
+    e.preventDefault();
+
     if (addingKey) {
       return;
     }
@@ -31,8 +34,8 @@ const ExchangeKeys = () => {
       const exchangeKey = await app.trader.addExchangeKey({ exchangeID, token, secret });
       setExchangeKeys(curKeys => (curKeys ? [...curKeys, exchangeKey] : [exchangeKey]));
       setShowModal(false);
-    } catch (e) {
-      setAddKeyError(e.message);
+    } catch (err) {
+      setAddKeyError(err.message);
     }
 
     setAddingKey(false);
@@ -95,7 +98,7 @@ const ExchangeKeys = () => {
                   className={`delete ${(key.deleting) ? 'deleting' : ''}`}
                   onClick={() => deleteExchangeKey(key)}
                 >
-                  <FaTrashAlt />
+                  {!key.deleting && (<FaTrashAlt />)}
                   {key.deleting && (
                     <>
                       <Spinner
@@ -123,10 +126,17 @@ const ExchangeKeys = () => {
         </Card.Body>
       </Card>
 
+      <p className="message">
+        Your exchange keys are stored encrypted using the Advanced Encryption Standard (AES)
+        algorithm in Galois/Counter Mode (GCM) with 256-bit secret keys. We still recommend you use
+        read only exchange API keys. Please consult your exchange for instructions on creating read
+        only API keys.
+      </p>
+
       <Modal
         show={showModal}
         onHide={() => setShowModal(false)}
-        dialogClassName="modal-90w"
+        dialogClassName="modal-90w exchange-key-modal"
         aria-labelledby="exchange-key-modal-title"
       >
         <Modal.Header closeButton>
@@ -142,7 +152,7 @@ const ExchangeKeys = () => {
                 as="select"
                 name="exchangeID"
                 required
-                onChange={e => setExchangeID(e.target.value)}
+                onChange={(e) => { setExchangeID(e.target.value); }}
               >
                 <option value="binance">Binance</option>
               </Form.Control>

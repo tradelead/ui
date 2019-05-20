@@ -4,9 +4,9 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Alert from 'react-bootstrap/Alert';
 import Spinner from 'react-bootstrap/Spinner';
-import ProgressBar from 'react-bootstrap/ProgressBar';
 import AppContext from '../../../AppContext';
 import TraderImg from '../../TraderImg/TraderImg';
+import './ProfileSettings.css';
 
 const ProfileSettings = () => {
   const app = useContext(AppContext);
@@ -21,11 +21,11 @@ const ProfileSettings = () => {
     updateError,
   ] = useUpdateUser(app.trader, { bio });
 
-  const [
-    uploadProfilePhoto,
-    profilePhotoProgress,
-    profilePhotoError,
-  ] = useUploadFile(app.trader, 'profilePhoto');
+  // const [
+  //   uploadProfilePhoto,
+  //   profilePhotoProgress,
+  //   profilePhotoError,
+  // ] = useUploadFile(app.trader, 'profilePhoto');
 
   return (
     <div className="profileSettings">
@@ -57,7 +57,7 @@ const ProfileSettings = () => {
 
           <Form onSubmit={updateUser}>
             <Form.Group className="bio" controlId="formBio">
-              <Form.Label>Bio</Form.Label>
+              <Form.Label>Edit Bio</Form.Label>
               <Form.Text className="text-muted">
                 What do you want people to know about you?
               </Form.Text>
@@ -65,42 +65,59 @@ const ProfileSettings = () => {
                 as="textarea"
                 name="bio"
                 required
-                defaultValue={bio}
+                value={bio}
                 onChange={e => setBio(e.target.value)}
               />
             </Form.Group>
           </Form>
 
-          <div className="profilePhoto">
-            <TraderImg trader={app.trader} size="thumbnail" className="profilePhotoImg" />
-            <div className="file-upload-wrap">
-              {profilePhotoProgress === false && (
-                <div>
-                  <input
-                    type="file"
-                    className="file-upload"
-                    id="profileUploadInput"
-                    name="profileUploadInput"
-                    accept="image/png, image/jpeg"
-                    onChange={uploadProfilePhoto}
-                  />
-                  <label htmlFor="profileUploadInput">Upload File</label>
-                </div>
-              )}
+          <Form.Group className="profilePhoto">
+            <Form.Label>Edit Profile Photo</Form.Label>
+            <div className="profilePhoto-inner">
+              <TraderImg trader={app.trader} size="thumbnail" className="profilePhotoImg" />
+              <Upload
+                trader={app.trader}
+                uploadKey="profilePhoto"
+                render={(upload, progress, error) => (
+                  <div className="file-upload-wrap">
+                    {progress === false && (
+                      <div>
+                        <input
+                          type="file"
+                          className="file-upload"
+                          id="profileUploadInput"
+                          name="profileUploadInput"
+                          accept="image/png, image/jpeg"
+                          onChange={upload}
+                        />
+                        <label className="btn btn-primary" htmlFor="profileUploadInput">Upload File</label>
+                      </div>
+                    )}
 
-              {profilePhotoProgress !== false && profilePhotoProgress >= 0 && (
-                <div>
-                  <ProgressBar now={profilePhotoProgress} />
-                </div>
-              )}
+                    {progress !== false && progress >= 0 && (
+                      <div>
+                        {`${Math.trunc(progress)}%`}
+                        <div
+                          className="progressBar"
+                          style={{
+                            width: `${Math.trunc(progress)}%`,
+                            height: '1px',
+                            background: '#2fb1ff',
+                          }}
+                        />
+                      </div>
+                    )}
 
-              {profilePhotoError && (
-                <Alert dismissible className="upload-profile-photo-error" variant="danger">
-                  {profilePhotoError}
-                </Alert>
-              )}
+                    {error && (
+                      <Alert dismissible className="upload-profile-photo-error" variant="danger">
+                        {error}
+                      </Alert>
+                    )}
+                  </div>
+                )}
+              />
             </div>
-          </div>
+          </Form.Group>
         </Card.Body>
       </Card>
     </div>
@@ -148,7 +165,8 @@ function useUpdateUser(trader, data) {
   return [updateUser, loading, error];
 }
 
-function useUploadFile(trader, key) {
+
+function Upload({ trader, uploadKey, render }) {
   const [progress, setProgress] = useState(false);
   const [error, setError] = useState('');
 
@@ -166,7 +184,7 @@ function useUploadFile(trader, key) {
     };
 
     try {
-      await trader.upload({ key, file }, progressHandler);
+      await trader.upload({ key: uploadKey, file }, progressHandler);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -174,7 +192,7 @@ function useUploadFile(trader, key) {
     }
   };
 
-  return [upload, progress, error];
+  return render(upload, progress, error);
 }
 
 export default ProfileSettings;

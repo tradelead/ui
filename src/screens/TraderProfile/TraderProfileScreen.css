@@ -1,0 +1,14 @@
+.traderProfileScreen .loading,
+.traderProfileScreen .error {
+    margin-top: 50px;
+}
+
+.traderProfileScreen .error {
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.traderProfileScreen .loading {
+    text-align: center;
+}

@@ -5,10 +5,10 @@ import LeaderDisplay from '../LeaderDisplay/LeaderDisplay';
 import AppContext from '../../AppContext';
 
 const Leaderboard = () => {
-  const { traderScore } = useContext(AppContext);
-  const [allTimeTopTraders, allTimeLoading] = useTopTraders({ traderScore, limit: 15 });
-  const [weeklyTopTraders, weeklyLoading] = useTopTraders({ traderScore, period: 'week', limit: 15 });
-  const [dailyTopTraders, dailyLoading] = useTopTraders({ traderScore, period: 'day', limit: 15 });
+  const { traderService } = useContext(AppContext);
+  const [allTimeTopTraders, allTimeLoading] = useTopTraders({ traderService, limit: 15 });
+  const [weeklyTopTraders, weeklyLoading] = useTopTraders({ traderService, period: 'week', limit: 15 });
+  const [dailyTopTraders, dailyLoading] = useTopTraders({ traderService, period: 'day', limit: 15 });
 
   return (
     <div className="leaderboard">
@@ -29,17 +29,17 @@ const Leaderboard = () => {
   );
 };
 
-function useTopTraders({ traderScore, period, limit }) {
+function useTopTraders({ traderService, period, limit }) {
   const [topTraders, setTopTraders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => (traderScore.subscribeToTopTraders(
+  useEffect(() => (traderService.subscribeToTopTraders(
     { period, limit },
     (newTopTraders) => {
       setTopTraders(newTopTraders);
       setLoading(false);
     },
-  )), [traderScore, period, limit]);
+  )), [traderService, period, limit]);
 
   return [topTraders, loading];
 }

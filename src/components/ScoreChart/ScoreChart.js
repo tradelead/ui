@@ -71,10 +71,11 @@ const ScoreChart = ({ trader, width, height }) => {
 
 function useTraderScoreHistory({ trader, duration }) {
   const [scoreHistory, setScoreHistory] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (trader.id) {
+      setLoading(true);
       return trader.subscribeToScoreHistory(
         { duration },
         (newScoreHistory) => {

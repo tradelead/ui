@@ -143,15 +143,19 @@ describe('save profile info', () => {
 });
 
 describe('upload profile photo', () => {
-  const simulateUpload = async () => {
-    ctx.trader.upload.callsFake(async (data, progressFn) => {
-      for (let i = 0; i < 50; i += 1) {
-        await sleep(1);
-        progressFn(i * 2);
-      }
+  const simulateUpload = async (err) => {
+    if (!err) {
+      ctx.trader.upload.callsFake(async (data, progressFn) => {
+        for (let i = 0; i < 50; i += 1) {
+          await sleep(1);
+          progressFn(i * 2);
+        }
 
-      return true;
-    });
+        return true;
+      });
+    } else {
+      ctx.trader.upload.rejects(err);
+    }
 
     const size = 1024 * 1024 * 2;
     const mock = new MockFile();
@@ -203,7 +207,9 @@ describe('upload profile photo', () => {
       await sleep(0);
     });
 
-    expect(wrapper.find('ProgressBar').prop('now')).toBeGreaterThanOrEqual(1);
+    const { width } = wrapper.find('.progressBar').prop('style');
+    const progress = Math.trunc(width.substr(0, width.length - 1));
+    expect(progress).toBeGreaterThanOrEqual(1);
   });
 
   it('hides progress bar after complete', async () => {
@@ -228,6 +234,19 @@ describe('upload profile photo', () => {
     });
 
     expect(wrapper.find('input.file-upload')).toHaveLength(1);
+  });
+
+  it('shows error if fails', async () => {
+    const errMsg = 'This is my error';
+    const { wrapper } = await simulateUpload(new Error(errMsg));
+
+    await act(async () => {
+      await sleep(300);
+      wrapper.update();
+      await sleep(0);
+    });
+
+    expect(wrapper.find('.file-upload-wrap').text()).toContain(errMsg);
   });
 });
 

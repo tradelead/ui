@@ -147,9 +147,9 @@ describe('chart data', () => {
 
   it('passes score data to LineChart', async () => {
     const expectedChartData = [
-      { time: 100, value: 1 },
-      { time: 200, value: 2 },
-      { time: 300, value: 3 },
+      { time: 100, value: 1, date: new Date(100).toISOString(), dateFormatted: 'Dec 31 @ 07 PM' },
+      { time: 200, value: 2, date: new Date(200).toISOString(), dateFormatted: 'Dec 31 @ 07 PM' },
+      { time: 300, value: 3, date: new Date(300).toISOString(), dateFormatted: 'Dec 31 @ 07 PM' },
     ];
 
     expect(wrapper.find('.test-line-chart')).toExist();

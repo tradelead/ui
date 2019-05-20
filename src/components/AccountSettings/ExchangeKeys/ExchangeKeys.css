@@ -1,0 +1,58 @@
+.exchangeKey {
+    margin-bottom: 50px;
+}
+
+.exchange-keys .exchange-key {
+    display: flex;
+    width: 100%;
+    background: #efefef;
+    padding: 5px 30px;
+    margin-bottom: 3px;
+}
+
+.exchange-keys .exchange-key > * {
+    padding: 4px 8px;
+    vertical-align: middle;
+}
+
+.exchangeKey .card-body {
+    padding: 0;
+    min-height: 200px;
+}
+
+.exchange-key .exchange {
+    flex: 1;
+    padding-left: 0;
+}
+
+.exchange-keys .exchange-key .secretLast4,
+.exchange-keys .exchange-key .tokenLast4{
+    width: 95px;
+}
+
+.exchange-keys .exchange-key .delete {
+    background: none;
+    border: 1px solid transparent;
+    font-size: 10px;
+    background: #0000000d;
+    border-radius: 5px;
+    padding-bottom: 6px;
+    margin-top: 2px;
+    color: #bf2c2c;
+    transition: all 0.6s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.exchange-keys .exchange-key .delete:hover {
+    border-color: #bf2c2c;
+}
+
+.exchange-key-modal .btn {
+    width: calc(100% + 32px);
+    padding: 17px 0;
+    border-radius: 0 0 .25rem .25rem;
+    margin: 30px -16px -16px;
+    font-size: 20px;
+}

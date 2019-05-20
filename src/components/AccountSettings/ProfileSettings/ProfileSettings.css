@@ -1,0 +1,40 @@
+.profileSettings .bio textarea {
+    min-height: 200px;
+}
+
+.profilePhoto .file-upload-wrap [type='file'] + label {
+    cursor: pointer;
+}
+
+.profilePhoto .file-upload-wrap [type='file'] {
+    border: 0;
+    clip: rect(0, 0, 0, 0);
+    height: 1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute !important;
+    white-space: nowrap;
+    width: 1px;
+}
+
+.profileSettings .profilePhoto {
+    margin-top: 50px;
+}
+
+.profileSettings .profilePhoto .profilePhoto-inner {
+    display: flex;
+    align-items: center;
+    margin-top: 12px;
+}
+
+.profileSettings .profilePhoto .profilePhoto-inner img {
+    width: 120px;
+    background: #eee;
+    border-radius: 150px;
+    margin-right: 21px;
+}
+
+.profileSettings .profilePhoto .profilePhoto-inner .file-upload-wrap {
+    flex: 1;
+    text-align: center;
+}

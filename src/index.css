@@ -15,3 +15,61 @@ code {
 h1 {
   font-family: "Nunito Sans", sans-serif;
 }
+
+/* bootstrap card styles */
+.card {
+  border: none;
+  box-shadow: 0 0 28px #0000001f;
+  margin-bottom: 40px;
+}
+
+.card .card-header {
+  background: none;
+  border-bottom: 1px solid #efefef;
+  display: flex;
+  align-items: center;
+  padding: 21px 30px;
+}
+
+.card .card-header h2 {
+  font-size: 21px;
+  font-family: "Nunito Sans", sans-serif;
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.card .card-body {
+  padding: 21px 30px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #2fb1ff 15%,#1d72f8 84%);
+  border: none;
+  padding: 7px 18px;
+  min-width: 90px;
+  font-family: "Nunito Sans", sans-serif;
+  font-weight: 600;
+  vertical-align: middle;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #2ba3eb 15%, #1a67e1 84%);
+}
+
+.form-group label + small.form-text {
+  margin-top: -11px;
+  margin-bottom: 10px;
+}
+
+textarea.form-control {
+  font-size: 14px;
+}
+
+.modal .modal-title {
+  font-family: "Nunito Sans", sans-serif;
+  font-size: 20px;
+}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import './LineChart.css';
 import { AreaClosed, Line, LinePath } from '@vx/shape';
@@ -7,6 +7,7 @@ import { localPoint } from '@vx/event';
 import { scaleTime, scaleLinear } from '@vx/scale';
 import { AxisRight, AxisBottom } from '@vx/axis';
 import { withTooltip } from '@vx/tooltip';
+import throttle from 'lodash.throttle';
 
 import {
   extent,
@@ -38,7 +39,7 @@ const LineChart = (props) => {
     tooltipData, // eslint-disable-line
     tooltipLeft, // eslint-disable-line
   } = props;
-  const [pathRef, setPathRef] = useState(null);
+  const pathRef = useRef({});
 
   const activePoint = tooltipData;
   const activePointX = tooltipLeft;
@@ -62,14 +63,14 @@ const LineChart = (props) => {
     marginTop,
   });
 
-  if (!xScale || !yScale) { return (<div className="score-line-chart" />); }
-
-  const interactiveMoveHandler = chartMouseAndTouchHandler({
+  const interactiveMoveHandler = useChartMouseAndTouchHandler({
     end: false,
     showTooltip,
     xScale,
     data,
   });
+
+  if (!xScale || !yScale) { return (<div className="score-line-chart" />); }
 
   return (
     <div className="score-line-chart">
@@ -113,7 +114,7 @@ const LineChart = (props) => {
           curve={curveMonotoneX}
           strokeWidth={2}
           stroke="#1d72f8"
-          innerRef={setPathRef}
+          innerRef={pathRef}
         />
 
         <g className="x-axis-legend-wrap">
@@ -148,7 +149,7 @@ const LineChart = (props) => {
           />
         </g>
 
-        {pathRef && activePoint && (
+        {pathRef.current && activePoint && (
           <Motion
             defaultStyle={{ opacity: 0, x: activePointX }}
             style={{
@@ -157,7 +158,7 @@ const LineChart = (props) => {
             }}
           >
             {(style) => {
-              const y = findPathYatX(style.x, pathRef);
+              const y = findPathYatX(style.x, pathRef.current);
               return (
                 <g className="crosshairs">
                   <LineMem
@@ -214,7 +215,7 @@ const LineChart = (props) => {
         />
       </svg>
 
-      {pathRef && activePoint && (
+      {pathRef.current && activePoint && (
         <div className="chart-tooltips">
           <div className="date">{activePoint.dateFormatted}</div>
           <div className="score">{ySelector(activePoint)}</div>
@@ -239,16 +240,10 @@ LineChart.defaultProps = {
 };
 
 function useXScale({ data, xMax }) {
-  const [xScale, setXScale] = useState(null);
-  useEffect(() => {
-    const xScaleFn = scaleTime({
-      range: [0, xMax],
-      domain: extent(data, xSelector),
-    });
-    setXScale(() => xScaleFn);
-  }, [data]);
-
-  return xScale;
+  return useMemo(() => scaleTime({
+    range: [0, xMax],
+    domain: extent(data, xSelector),
+  }), [data]);
 }
 
 function useYScale({
@@ -256,33 +251,28 @@ function useYScale({
   yMax,
   marginTop,
 }) {
-  const [yScale, setYScale] = useState(null);
-  useEffect(() => {
+  return useMemo(() => {
     const yMinValue = min(data, ySelector);
     const yMaxValue = max(data, ySelector);
     const yMinValuePadded = yMinValue - ((yMaxValue - yMinValue) * 0.2);
     const yMaxValuePadded = yMaxValue + (yMaxValue * (marginTop / 100));
 
-    const yScaleFn = scaleLinear({
+    return scaleLinear({
       range: [yMax, 0],
       domain: [yMinValuePadded, yMaxValuePadded],
       nice: true,
     });
-
-    setYScale(() => yScaleFn);
   }, [data]);
-
-  return yScale;
 }
 
-function chartMouseAndTouchHandler({
+function useChartMouseAndTouchHandler({
   end,
   hideTooltip,
   showTooltip,
   xScale,
   data,
 }) {
-  return (event) => {
+  const chartMouseAndTouchHandler = throttle((event) => {
     if (end) {
       hideTooltip();
       return;
@@ -309,7 +299,14 @@ function chartMouseAndTouchHandler({
       tooltipLeft: xScale(xSelector(d)),
       tooltipTop: 0,
     });
+  }, 100);
+
+  const eventHandler = (e) => {
+    e.persist();
+    chartMouseAndTouchHandler(e);
   };
+
+  return useMemo(() => eventHandler, [data]);
 }
 
 function numTicksForHeight(height) {
