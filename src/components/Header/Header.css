@@ -308,9 +308,9 @@ Note: Beware of modifying this element as it can break the animations - you shou
     margin-left: 0;
 }
 
-.bm-menu .header-labeled-badge.score {
+.bm-menu .header-labeled-badge {
     padding-left: 0;
-    flex: 1;
+    text-align: left;
 }
 
 .bm-menu button.toggle-account-menu {

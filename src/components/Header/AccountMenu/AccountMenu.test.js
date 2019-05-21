@@ -16,6 +16,7 @@ beforeEach(() => {
       login: sinon.stub(),
       register: sinon.stub(),
       logout: sinon.stub(),
+      settingsUrl: 'http://example.com/loginSettings',
     },
     trader: {
       get: sinon.stub(),
@@ -60,7 +61,9 @@ describe('when not logged in', () => {
   it('calls auth register when sign up button clicked', () => {
     const wrapper = mount(<TestAccountMenu value={ctx} />);
     wrapper.find('button.signup').simulate('click');
-    sinon.assert.called(ctx.auth.register);
+    const port = window.location.port ? `:${window.location.port}` : '';
+    const expectedUrl = `${window.location.protocol}//${window.location.host}${port}/account`;
+    sinon.assert.calledWith(ctx.auth.register, expectedUrl);
   });
 });
 
@@ -73,6 +76,12 @@ describe('when logged in', () => {
     const wrapper = mount(<TestAccountMenu value={ctx} />);
     expect(wrapper.find('button.login')).toHaveLength(0);
     expect(wrapper.find('button.signup')).toHaveLength(0);
+  });
+
+  it('shows login settings link with url', () => {
+    const wrapper = mount(<TestAccountMenu value={ctx} />);
+    expect(wrapper.find('.loginSettings'))
+      .toHaveProp('href', 'http://example.com/loginSettings');
   });
 
   it('calls auth logout when logout button clicked', () => {

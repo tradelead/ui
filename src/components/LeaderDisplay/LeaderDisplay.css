@@ -73,6 +73,15 @@
     color: #1e87fa;
 }
 
+.leader-display .trader a {
+    color: #1c87fa;
+}
+
+.leader-display .trader a .username {
+    position: relative;
+    top: 1px;
+}
+
 @media screen and (max-width: 1200px) {
     .leader-display .leader .rank,
     .leader-display .leader .score {

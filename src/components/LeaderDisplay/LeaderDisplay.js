@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 import Spinner from 'react-bootstrap/Spinner';
 import TraderPropType from '../../propTypes/Trader';
 import TraderImg from '../TraderImg/TraderImg';
@@ -22,8 +23,10 @@ const LeaderDisplay = ({ traders, loading }) => (
     {traders && traders.map(({ trader, score, rank }) => (
       <div className="leader">
         <div className="row-data trader">
-          <TraderImg trader={trader} size="thumbnail" className="profilePhoto" />
-          <div className={`username ${trader.username.length > 15 && 'long'}`}>{trader.username}</div>
+          <Link to={`/trader/${trader.username}`}>
+            <TraderImg trader={trader} size="thumbnail" className="profilePhoto" />
+            <div className={`username ${trader.username.length > 15 && 'long'}`}>{trader.username}</div>
+          </Link>
         </div>
         <div className="row-data rank">{rank}</div>
         <div className="row-data score">{score}</div>

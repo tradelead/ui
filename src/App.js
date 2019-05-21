@@ -145,8 +145,7 @@ function getMockTrader() {
       const keys = args.map(a => (typeof a === 'string' ? a : a.key));
 
       if (keys.includes('bio')) {
-        rsp.bio = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin sollicitudin nibh turpis gravida commodo. Proin viverra aliquam varius. Cras rutrum malesuada elit, non placerat purus efficitur ut. \n\n';
-        rsp.bio += 'Aliquam elementum lorem vel tincidunt efficitur. Praesent tincidunt lobortis magna. Sed viverra nisl non ex laoreet, eu consequat dui mattis. Suspendisse mattis tristique cursus.';
+        rsp.bio = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin sollicitudin nibh turpis gravida commodo.';
       }
 
       if (keys.includes('website')) {

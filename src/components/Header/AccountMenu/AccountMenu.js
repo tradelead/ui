@@ -6,7 +6,15 @@ import TraderImg from '../../TraderImg/TraderImg';
 
 const AccountMenu = ({ closeMenu }) => {
   const app = useContext(AppContext);
-  const { register, login, logout } = app.auth;
+  const {
+    register,
+    login,
+    logout,
+    settingsUrl,
+  } = app.auth;
+
+  const port = window.location.port ? `:${window.location.port}` : '';
+  const accountUrl = `${window.location.protocol}//${window.location.host}${port}/account`;
 
   const [open, setOpen] = useState(false);
   const toggleOpen = () => setOpen(!open);
@@ -19,7 +27,7 @@ const AccountMenu = ({ closeMenu }) => {
     return (
       <div className="account-login-register">
         <button type="button" className="login" onClick={() => { login(); closeMenu(); }}>Login</button>
-        <button type="button" className="signup" onClick={() => { register(); closeMenu(); }}>Sign Up</button>
+        <button type="button" className="signup" onClick={() => { register(accountUrl); closeMenu(); }}>Sign Up</button>
       </div>
     );
   }
@@ -47,6 +55,16 @@ const AccountMenu = ({ closeMenu }) => {
       <div className={`account-menu ${(open) ? 'account-menu-open' : ''}`}>
         <ul>
           <li><Link onClick={closeMenu} to="/account">Account Settings</Link></li>
+          <li>
+            <a
+              className="loginSettings"
+              href={settingsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Login Settings
+            </a>
+          </li>
           <li>
             <button type="button" className="logout" onClick={() => { logout(); closeMenu(); }}>Logout</button>
           </li>
