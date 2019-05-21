@@ -42,16 +42,8 @@ function useTraderScore(trader) {
   const [score, setScore] = useState(null);
 
   useEffect(() => {
-    const getScore = async () => {
-      setScore(await trader.getScore());
-    };
-
-    const scoreUpdates = () => trader.addListener('newScore', newScore => setScore(newScore));
-
     if (trader.id) {
-      getScore();
-      const listener = scoreUpdates();
-      return () => listener.remove();
+      return trader.subscribeToScore(newScore => setScore(newScore));
     }
 
     return () => {};
@@ -64,16 +56,8 @@ function useTraderRank(trader) {
   const [rank, setRank] = useState(null);
 
   useEffect(() => {
-    const getRank = async () => {
-      setRank(await trader.getRank());
-    };
-
-    const rankUpdates = () => trader.addListener('newRank', newRank => setRank(newRank));
-
     if (trader.id) {
-      getRank();
-      const listener = rankUpdates();
-      return () => listener.remove();
+      return trader.subscribeToRank(newRank => setRank(newRank));
     }
 
     return () => {};

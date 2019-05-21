@@ -10,6 +10,8 @@ const mockTrader = {
   get: sinon.stub(),
 };
 
+mockTrader.get.resolves({});
+
 function setup() {
   return <TraderInfo trader={mockTrader} />;
 }
@@ -49,11 +51,13 @@ it('displays trader username', async () => {
 });
 
 it('displays trader bio', async () => {
-  mockTrader.get.withArgs(['bio']).resolves({ bio: 'This is my bio \ntest line break.' });
+  mockTrader.get.withArgs(sinon.match.array.contains(['bio']))
+    .resolves({ bio: 'This is my bio \ntest line break.' });
 
   const component = setup();
   const wrapper = await asyncMount(component);
 
+  console.log(wrapper.find('.bio').debug());
   expect(wrapper.find('.bio span')).toHaveLength(2);
   expect(wrapper.find('.bio span').at(0).text()).toEqual('This is my bio ');
   expect(wrapper.find('.bio span').at(0).find('br')).toHaveLength(1);

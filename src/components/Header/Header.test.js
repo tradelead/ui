@@ -3,7 +3,6 @@ import { act } from 'react-dom/test-utils';
 import sinon from 'sinon';
 import { mount } from 'enzyme';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { EventEmitter } from 'fbemitter';
 import Header from './Header';
 import AppContext from '../../AppContext';
 
@@ -16,11 +15,11 @@ beforeEach(() => {
       register: sinon.stub(),
       logout: sinon.stub(),
     },
-    trader: Object.assign(new EventEmitter(), {
-      getScore: sinon.stub(),
-      getRank: sinon.stub(),
+    trader: {
+      subscribeToScore: sinon.stub(),
+      subscribeToRank: sinon.stub(),
       get: sinon.stub(),
-    }),
+    },
   };
 });
 
@@ -30,6 +29,10 @@ function TestHeader({ value }) {
   return (
     <Router><AppContext.Provider value={value}><Header /></AppContext.Provider></Router>
   );
+}
+
+async function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 async function mountAsync(component) {
@@ -51,33 +54,64 @@ it('renders without trader', () => {
 });
 
 describe('when trader exists', () => {
+  let scoreListener = null;
+  let rankListener = null;
+
   beforeEach(() => {
     ctx.trader.id = 'trader123';
+
+    ctx.trader.subscribeToScore.callsFake((callback) => {
+      scoreListener = callback;
+      return () => {};
+    });
+
+    ctx.trader.subscribeToRank.callsFake((callback) => {
+      rankListener = callback;
+      return () => {};
+    });
   });
 
   it('shows score when exists', async () => {
-    ctx.trader.getScore.resolves(1200);
     const el = await mountAsync(<TestHeader value={ctx} />);
+    await act(async () => {
+      scoreListener(1200);
+      await sleep(0);
+      el.update();
+    });
     expect(el.find('.score .value').text()).toEqual('1200');
   });
 
   it('updates score when trader newScore emitted', async () => {
-    ctx.trader.getScore.resolves(1200);
     const el = await mountAsync(<TestHeader value={ctx} />);
-    act(() => ctx.trader.emit('newScore', 1212));
+    await act(async () => {
+      scoreListener(1200);
+      await sleep(0);
+      scoreListener(1212);
+      await sleep(0);
+      el.update();
+    });
     expect(el.find('.score .value').text()).toEqual('1212');
   });
 
   it('shows rank when exists', async () => {
-    ctx.trader.getRank.resolves(12);
     const el = await mountAsync(<TestHeader value={ctx} />);
+    await act(async () => {
+      rankListener(12);
+      await sleep(0);
+      el.update();
+    });
     expect(el.find('.rank .value').text()).toEqual('12');
   });
 
   it('updates rank when trader newRank emitted', async () => {
-    ctx.trader.getRank.resolves(12);
     const el = await mountAsync(<TestHeader value={ctx} />);
-    act(() => ctx.trader.emit('newRank', 24));
+    await act(async () => {
+      rankListener(12);
+      await sleep(0);
+      rankListener(24);
+      await sleep(0);
+      el.update();
+    });
     expect(el.find('.rank .value').text()).toEqual('24');
   });
 });

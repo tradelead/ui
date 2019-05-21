@@ -88,13 +88,11 @@ function getMockTrader() {
   return Object.assign(new EventEmitter(), {
     id: 'trader123',
     username: 'tradername123',
-    async getScore() {
-      await sleep(150); // random delay to simulate network request
-      return 123;
+    subscribeToScore(callback) {
+      setTimeout(() => callback(123), 200);
     },
-    async getRank() {
-      await sleep(150); // random delay to simulate network request
-      return 12;
+    subscribeToRank(callback) {
+      setTimeout(() => callback(12), 200);
     },
     subscribeToScoreHistory(opts, callback) {
       const DAY_SEC = 24 * 60 * 60 * 1000;
