@@ -68,3 +68,15 @@
 .traderInfo a.website svg {
     margin-right: 10px;
 }
+
+@media screen and (max-width: 991px) {
+    .traderInfo::before {
+        clip-path: circle(167% at 36% -374%);
+    }
+}
+
+@media screen and (max-width: 500px) {
+    .traderInfo::before {
+        clip-path: circle(153% at 50% -164%);
+    }
+}

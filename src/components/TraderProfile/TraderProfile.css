@@ -1,19 +1,47 @@
-@media (min-width: 992px) {
-    .trader-profile {
-        flex-wrap: wrap;
-    }
+.trader-profile .row {
+    flex-direction: column;
+    height: calc(100vh - 85px);
+    flex-wrap: nowrap;
 }
 
 .traderInfoWrap {
-    flex: 0;
-    flex-basis: 350px;
-    background: #f9f9f9;
-    box-shadow: 0 0 30px rgba(0, 0, 0, 0.06);
-    position: relative;
-    z-index: 1;
+    border-bottom: 1px solid #eee;
 }
 
 .traderScoreWrap {
     flex: 1;
+    min-height: 400px;
     padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.traderScoreWrapInner {
+    flex: 1 0 400px;
+    width: 100%;
+}
+
+.trader-profile .score-line-chart svg {
+    height: 100% !important;
+}
+
+@media (max-width: 991px) {
+    .trader-profile .score-line-chart {
+        height: auto;
+    }
+}
+
+@media (min-width: 992px) {
+    .trader-profile .row {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+    }
+
+    .traderInfoWrap {
+        flex: 0 0 350px;
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0.06);
+        position: relative;
+        z-index: 1;
+    }
 }

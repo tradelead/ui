@@ -8,7 +8,7 @@ function useElSize(el) {
   useEffect(() => {
     if (el && el.current) {
       const setSizeToEl = throttle(
-        () => { setWidth(el.current.clientWidth); setHeight(el.current.clientHeight); },
+        () => { console.log(el.current); setWidth(el.current.clientWidth); setHeight(el.current.clientHeight); },
         100,
       );
       setSizeToEl();
