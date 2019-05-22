@@ -6,6 +6,13 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import Header from './Header';
 import AppContext from '../../AppContext';
 
+jest.mock('../TraderImg/TraderImg', () => (
+  // eslint-disable-next-line func-names
+  function MockTraderImg() {
+    return <div />;
+  }
+));
+
 let ctx;
 
 beforeEach(() => {
@@ -16,9 +23,7 @@ beforeEach(() => {
       logout: sinon.stub(),
     },
     trader: {
-      subscribeToScore: sinon.stub(),
-      subscribeToRank: sinon.stub(),
-      get: sinon.stub(),
+      observe: sinon.stub(),
     },
   };
 });
@@ -54,19 +59,13 @@ it('renders without trader', () => {
 });
 
 describe('when trader exists', () => {
-  let scoreListener = null;
-  let rankListener = null;
+  let observer = null;
 
   beforeEach(() => {
     ctx.trader.id = 'trader123';
 
-    ctx.trader.subscribeToScore.callsFake((callback) => {
-      scoreListener = callback;
-      return () => {};
-    });
-
-    ctx.trader.subscribeToRank.callsFake((callback) => {
-      rankListener = callback;
+    ctx.trader.observe.callsFake((args, callback) => {
+      observer = callback;
       return () => {};
     });
   });
@@ -74,7 +73,7 @@ describe('when trader exists', () => {
   it('shows score when exists', async () => {
     const el = await mountAsync(<TestHeader value={ctx} />);
     await act(async () => {
-      scoreListener(1200);
+      observer({ score: 1200 });
       await sleep(0);
       el.update();
     });
@@ -84,9 +83,9 @@ describe('when trader exists', () => {
   it('updates score when trader newScore emitted', async () => {
     const el = await mountAsync(<TestHeader value={ctx} />);
     await act(async () => {
-      scoreListener(1200);
+      observer({ score: 1200 });
       await sleep(0);
-      scoreListener(1212);
+      observer({ score: 1212 });
       await sleep(0);
       el.update();
     });
@@ -96,7 +95,7 @@ describe('when trader exists', () => {
   it('shows rank when exists', async () => {
     const el = await mountAsync(<TestHeader value={ctx} />);
     await act(async () => {
-      rankListener(12);
+      observer({ rank: 12 });
       await sleep(0);
       el.update();
     });
@@ -106,9 +105,9 @@ describe('when trader exists', () => {
   it('updates rank when trader newRank emitted', async () => {
     const el = await mountAsync(<TestHeader value={ctx} />);
     await act(async () => {
-      rankListener(12);
+      observer({ rank: 12 });
       await sleep(0);
-      rankListener(24);
+      observer({ rank: 24 });
       await sleep(0);
       el.update();
     });

@@ -18,6 +18,8 @@ const ctx = {
   },
 };
 
+ctx.traderService.getTrader.resolves({});
+
 async function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }

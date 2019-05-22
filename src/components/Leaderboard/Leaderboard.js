@@ -33,7 +33,7 @@ function useTopTraders({ traderService, period, limit }) {
   const [topTraders, setTopTraders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => (traderService.subscribeToTopTraders(
+  useEffect(() => (traderService.observeTopTraders(
     { period, limit },
     (newTopTraders) => {
       setTopTraders(newTopTraders);

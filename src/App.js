@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
-import { EventEmitter } from 'fbemitter';
 import { push as Menu } from 'react-burger-menu';
+import sleep from './utils/sleep';
 import DashboardScreen from './screens/Dashboard/DashboardScreen';
 import LeaderboardScreen from './screens/Leaderboard/LeaderboardScreen';
 import TraderProfileScreen from './screens/TraderProfile/TraderProfileScreen';
@@ -22,7 +22,7 @@ function App() {
     },
     trader: mockTrader,
     traderService: {
-      subscribeToTopTraders({ limit }, callback) {
+      observeTopTraders({ limit }, callback) {
         const traders = new Array(limit).fill({
           trader: mockTrader,
           rank: 123,
@@ -80,21 +80,11 @@ function App() {
   );
 }
 
-async function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 function getMockTrader() {
-  return Object.assign(new EventEmitter(), {
+  return {
     id: 'trader123',
     username: 'tradername123',
-    subscribeToScore(callback) {
-      setTimeout(() => callback(123), 200);
-    },
-    subscribeToRank(callback) {
-      setTimeout(() => callback(12), 200);
-    },
-    subscribeToScoreHistory(opts, callback) {
+    observeScoreHistory(opts, callback) {
       const DAY_SEC = 24 * 60 * 60 * 1000;
       const scoreHistory = [
         { time: Date.now() - DAY_SEC * 3, score: 100 },
@@ -106,25 +96,52 @@ function getMockTrader() {
         { time: Date.now() - DAY_SEC, score: 140 },
       ];
 
-      // random delay to simulate network request
       setTimeout(() => callback(scoreHistory), 280);
     },
-    async getExchangeKeys() {
-      await sleep(200);
-      return [
-        {
-          exchangeID: 'binance',
-          exchangeLabel: 'Binance',
-          tokenLast4: 'aEwq',
-          secretLast4: 'PqnB',
-        },
-        {
-          exchangeID: 'bittrex',
-          exchangeLabel: 'Bittrex',
-          tokenLast4: '24aq',
-          secretLast4: '4elH',
-        },
-      ];
+    observe(args, callback) {
+      (async () => {
+        // callback(rsp, loading, error);
+        callback({}, true, null);
+        await sleep(200);
+
+        const rsp = {};
+        const keys = args.map(a => (typeof a === 'string' ? a : a.key));
+
+        if (keys.includes('score')) {
+          rsp.score = 123;
+        }
+
+        if (keys.includes('rank')) {
+          rsp.rank = 12;
+        }
+
+        if (keys.includes('bio')) {
+          rsp.bio = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin sollicitudin nibh turpis gravida commodo.';
+        }
+
+        if (keys.includes('website')) {
+          rsp.website = 'http://example.com';
+        }
+
+        if (keys.includes('exchangeKeys')) {
+          rsp.exchangeKeys = [
+            {
+              exchangeID: 'binance',
+              exchangeLabel: 'Binance',
+              tokenLast4: 'aEwq',
+              secretLast4: 'PqnB',
+            },
+            {
+              exchangeID: 'bittrex',
+              exchangeLabel: 'Bittrex',
+              tokenLast4: '24aq',
+              secretLast4: '4elH',
+            },
+          ];
+        }
+
+        callback(rsp, null, null);
+      })();
     },
     async addExchangeKey({ exchangeID, token, secret }) {
       await sleep(500);
@@ -137,20 +154,6 @@ function getMockTrader() {
     },
     async deleteExchangeKey() {
       await sleep(150);
-    },
-    async get(args) {
-      const rsp = {};
-      const keys = args.map(a => (typeof a === 'string' ? a : a.key));
-
-      if (keys.includes('bio')) {
-        rsp.bio = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin sollicitudin nibh turpis gravida commodo.';
-      }
-
-      if (keys.includes('website')) {
-        rsp.website = 'http://example.com';
-      }
-
-      return rsp;
     },
     async update() {
       await sleep(200);
@@ -165,7 +168,7 @@ function getMockTrader() {
 
       return true;
     },
-  });
+  };
 }
 
 export default App;

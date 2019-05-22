@@ -76,7 +76,7 @@ function useTraderScoreHistory({ trader, duration }) {
   useEffect(() => {
     if (trader.id) {
       setLoading(true);
-      return trader.subscribeToScoreHistory(
+      return trader.observeScoreHistory(
         { duration },
         (newScoreHistory) => {
           setScoreHistory(newScoreHistory);

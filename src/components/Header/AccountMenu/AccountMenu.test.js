@@ -3,10 +3,16 @@ import { act } from 'react-dom/test-utils';
 import sinon from 'sinon';
 import { mount } from 'enzyme';
 import { BrowserRouter as Router } from 'react-router-dom';
+import sleep from '../../../utils/sleep';
 import AccountMenu from './AccountMenu';
 import AppContext from '../../../AppContext';
 
-const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+jest.mock('../../TraderImg/TraderImg', () => (
+  // eslint-disable-next-line func-names
+  function MockTraderImg() {
+    return <div />;
+  }
+));
 
 let ctx;
 
@@ -91,21 +97,11 @@ describe('when logged in', () => {
   });
 
   describe('profile photo', () => {
-    it('shows default when profile photo empty', () => {
-      const wrapper = mount(<TestAccountMenu value={ctx} />);
-      const expectedUrl = `${process.env.PUBLIC_URL}/imgs/default-profile-thumbnail.png`;
-      expect(wrapper.find('.profilePhoto img').prop('src')).toEqual(expectedUrl);
-    });
-
     it('shows trader\'s profile photo', async () => {
-      const expectedUrl = `${process.env.PUBLIC_URL}/imgs/test.png`;
-      ctx.trader.get
-        .withArgs([{ key: 'profilePhoto', size: 'thumbnail' }])
-        .resolves({ profilePhoto: { url: expectedUrl } });
-
       const wrapper = await mountAsync(<TestAccountMenu value={ctx} />);
 
-      expect(wrapper.find('.profilePhoto img').prop('src')).toEqual(expectedUrl);
+      expect(wrapper.find('MockTraderImg')).toHaveProp('trader', ctx.trader);
+      expect(wrapper.find('MockTraderImg')).toHaveProp('size', 'thumbnail');
     });
   });
 

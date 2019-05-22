@@ -6,13 +6,12 @@ import Alert from 'react-bootstrap/Alert';
 import Spinner from 'react-bootstrap/Spinner';
 import Card from 'react-bootstrap/Card';
 import { FaTrashAlt } from 'react-icons/fa';
+import useTraderInfo from '../../../hooks/useTraderInfo';
 import AppContext from '../../../AppContext';
 import './ExchangeKeys.css';
 
 const ExchangeKeys = () => {
   const app = useContext(AppContext);
-  const [exchangeKeys, setExchangeKeys] = useState([]);
-  const [fetchKeysError, setFetchKeysError] = useState(false);
 
   const [showModal, setShowModal] = useState(false);
   const [addKeyError, setAddKeyError] = useState('');
@@ -21,7 +20,14 @@ const ExchangeKeys = () => {
   const [token, setToken] = useState('');
   const [secret, setSecret] = useState('');
 
-  useTraderExchangeKeys({ trader: app.trader, setExchangeKeys, setFetchKeysError });
+  // eslint-disable-next-line no-unused-vars
+  const [info, loading, error] = useTraderInfo(app.trader, ['exchangeKeys']);
+  console.log({ info, loading, error });
+
+  const [exchangeKeys, setExchangeKeys] = useState([]);
+  useEffect(() => {
+    setExchangeKeys(info.exchangeKeys);
+  }, [info]);
 
   const addExchangeKey = async (e) => {
     e.preventDefault();
@@ -31,8 +37,7 @@ const ExchangeKeys = () => {
     }
     setAddingKey(true);
     try {
-      const exchangeKey = await app.trader.addExchangeKey({ exchangeID, token, secret });
-      setExchangeKeys(curKeys => (curKeys ? [...curKeys, exchangeKey] : [exchangeKey]));
+      await app.trader.addExchangeKey({ exchangeID, token, secret });
       setShowModal(false);
     } catch (err) {
       setAddKeyError(err.message);
@@ -56,7 +61,6 @@ const ExchangeKeys = () => {
 
       try {
         await app.trader.deleteExchangeKey({ exchangeID: deleteKey.exchangeID });
-        setExchangeKeys(curKeys => curKeys.filter(key => key.exchangeID !== deleteKey.exchangeID));
       } catch (e) {
         updateExchangeKeyState(deleteKey.exchangeID, {
           deletingError: e.message,
@@ -77,7 +81,7 @@ const ExchangeKeys = () => {
         </Card.Header>
         <Card.Body>
           <div className="exchange-keys">
-            {fetchKeysError && (
+            {error && (
               <Alert className="error" variant="danger">Error Fetching Keys</Alert>
             )}
 
@@ -208,18 +212,5 @@ const ExchangeKeys = () => {
     </div>
   );
 };
-
-function useTraderExchangeKeys({ trader, setExchangeKeys, setFetchKeysError }) {
-  useEffect(() => {
-    (async () => {
-      try {
-        const traderKeys = await trader.getExchangeKeys();
-        setExchangeKeys(traderKeys);
-      } catch (e) {
-        setFetchKeysError(true);
-      }
-    })();
-  }, [trader]);
-}
 
 export default ExchangeKeys;

@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Spinner from 'react-bootstrap/Spinner';
 import Alert from 'react-bootstrap/Alert';
 import { FaDesktop } from 'react-icons/fa';
 import TraderPropType from '../../propTypes/Trader';
+import useTraderInfo from '../../hooks/useTraderInfo';
 import TraderImg from '../TraderImg/TraderImg';
 import './TraderInfo.css';
 
@@ -61,25 +62,5 @@ const TraderInfo = ({ trader }) => {
 TraderInfo.propTypes = {
   trader: TraderPropType.isRequired,
 };
-
-function useTraderInfo(trader, args) {
-  const [info, setInfo] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    (async () => {
-      try {
-        setInfo(await trader.get(args));
-      } catch (e) {
-        setError(e.message);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [trader]);
-
-  return [info, loading, error];
-}
 
 export default TraderInfo;

@@ -1,16 +1,23 @@
 import React from 'react';
 import sinon from 'sinon';
 import { act } from 'react-dom/test-utils';
-import { mount } from 'enzyme';
+import sleep from '../../../utils/sleep';
+import asyncMountWrapper from '../../../testUtils/asyncMountWrapper';
+import asyncUpdateWrapper from '../../../testUtils/asyncUpdateWrapper';
 import AppContext from '../../../AppContext';
 import MockFile from './MockFile';
 import ProfileSettings from './ProfileSettings';
 
-const sleep = async ms => new Promise(resolve => setTimeout(resolve, ms));
+jest.mock('../../TraderImg/TraderImg', () => (
+  // eslint-disable-next-line func-names
+  function MockTraderImg() {
+    return <div />;
+  }
+));
 
 const ctx = {
   trader: {
-    get: sinon.stub(),
+    observe: sinon.stub(),
     update: sinon.stub(),
     upload: sinon.stub(),
   },
@@ -24,20 +31,28 @@ function setup() {
 
 describe('show current profile info', () => {
   let wrapper;
+  let observer;
 
   beforeAll(async () => {
-    ctx.trader.get.withArgs(['bio'], false).resolves({ bio: 'my bio' });
+    ctx.trader.id = 'test';
+    ctx.trader.observe.callsFake((args, newObserver) => { observer = newObserver; });
 
     const component = setup();
-    wrapper = await asyncMount(component);
+    wrapper = await asyncMountWrapper(component);
   });
 
-  it('shows bio', () => {
+  it('calls observe with bio', () => {
+    sinon.assert.calledWith(ctx.trader.observe, ['bio'], sinon.match.any);
+  });
+
+  it('shows bio', async () => {
+    act(() => observer({ bio: 'my bio' }));
+    await asyncUpdateWrapper(wrapper);
     expect(wrapper.find('.bio textarea').text()).toEqual('my bio');
   });
 
   it('calls TraderImg with trader and size thumbnail', () => {
-    const traderImgWrap = wrapper.find('.profilePhoto').find('TraderImg');
+    const traderImgWrap = wrapper.find('MockTraderImg');
     expect(traderImgWrap).toHaveProp('trader', ctx.trader);
     expect(traderImgWrap).toHaveProp('size', 'thumbnail');
     expect(traderImgWrap).toHaveProp('className', 'profilePhotoImg');
@@ -49,7 +64,7 @@ describe('save profile info', () => {
     ctx.trader.update.returns(sleep(100));
 
     const component = setup();
-    const wrapper = await asyncMount(component);
+    const wrapper = await asyncMountWrapper(component);
 
     wrapper.find('.bio textarea')
       .simulate('change', { target: { value: 'new bio' } });
@@ -70,7 +85,7 @@ describe('save profile info', () => {
     ctx.trader.update.returns(sleep(0));
 
     const component = setup();
-    const wrapper = await asyncMount(component);
+    const wrapper = await asyncMountWrapper(component);
 
     wrapper.find('.bio textarea')
       .simulate('change', { target: { value: 'new bio' } });
@@ -90,7 +105,7 @@ describe('save profile info', () => {
     ctx.trader.update.rejects(new Error(error));
 
     const component = setup();
-    const wrapper = await asyncMount(component);
+    const wrapper = await asyncMountWrapper(component);
 
     wrapper.find('.bio textarea')
       .simulate('change', { target: { value: 'new bio' } });
@@ -108,7 +123,7 @@ describe('save profile info', () => {
   describe('saves bio', () => {
     test('when form submitted', async () => {
       const component = setup();
-      const wrapper = await asyncMount(component);
+      const wrapper = await asyncMountWrapper(component);
 
       wrapper.find('.bio textarea')
         .simulate('change', { target: { value: 'new bio' } });
@@ -125,7 +140,7 @@ describe('save profile info', () => {
 
     test('when button clicked', async () => {
       const component = setup();
-      const wrapper = await asyncMount(component);
+      const wrapper = await asyncMountWrapper(component);
 
       wrapper.find('.bio textarea')
         .simulate('change', { target: { value: 'new bio' } });
@@ -162,7 +177,7 @@ describe('upload profile photo', () => {
     const file = mock.create('pic.jpg', size, 'image/jpeg');
 
     const component = setup();
-    const wrapper = await asyncMount(component);
+    const wrapper = await asyncMountWrapper(component);
 
     await act(async () => {
       wrapper.find('.profilePhoto input.file-upload').simulate('change', {
@@ -249,14 +264,3 @@ describe('upload profile photo', () => {
     expect(wrapper.find('.file-upload-wrap').text()).toContain(errMsg);
   });
 });
-
-
-async function asyncMount(component) {
-  const wrapper = mount(component);
-
-  await act(async () => {
-    await sleep(0);
-  });
-
-  return wrapper;
-}

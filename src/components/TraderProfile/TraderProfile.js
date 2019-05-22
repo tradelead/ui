@@ -11,7 +11,6 @@ import './TraderProfile.css';
 const TraderProfile = ({ trader }) => {
   const chartWrapEl = useRef({});
   const [chartWidth, chartHeight] = useElSize(chartWrapEl);
-  console.log(chartWidth, chartHeight);
 
   return (
     <div className="trader-profile">

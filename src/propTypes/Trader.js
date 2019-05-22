@@ -7,6 +7,6 @@ export default PropTypes.shape({
   ]),
   username: PropTypes.string,
   get: PropTypes.func,
-  subscribeToScoreHistory: PropTypes.func,
-  subscribeToTopTraders: PropTypes.func,
+  observeScoreHistory: PropTypes.func,
+  observeTopTraders: PropTypes.func,
 });

@@ -24,7 +24,7 @@ jest.mock('../LeaderDisplay/LeaderDisplay', () => ({
 
 const ctx = {
   traderService: {
-    subscribeToTopTraders: sinon.stub(),
+    observeTopTraders: sinon.stub(),
   },
 };
 
@@ -38,7 +38,7 @@ it('subscribes to 15 all time top traders', () => {
   const component = setup();
   mount(component);
   sinon.assert.calledWith(
-    ctx.traderService.subscribeToTopTraders,
+    ctx.traderService.observeTopTraders,
     { limit: 15, period: undefined },
     sinon.match.any,
   );
@@ -48,7 +48,7 @@ it('subscribes to 15 weekly top traders', () => {
   const component = setup();
   mount(component);
   sinon.assert.calledWith(
-    ctx.traderService.subscribeToTopTraders,
+    ctx.traderService.observeTopTraders,
     { period: 'week', limit: 15 },
     sinon.match.any,
   );
@@ -58,7 +58,7 @@ it('subscribes to 15 daily top traders', () => {
   const component = setup();
   mount(component);
   sinon.assert.calledWith(
-    ctx.traderService.subscribeToTopTraders,
+    ctx.traderService.observeTopTraders,
     { period: 'day', limit: 15 },
     sinon.match.any,
   );
@@ -66,7 +66,7 @@ it('subscribes to 15 daily top traders', () => {
 
 it('marks LeaderDisplay as loading until callback called', () => {
   let listener = null;
-  ctx.traderService.subscribeToTopTraders.callsFake((args, callback) => {
+  ctx.traderService.observeTopTraders.callsFake((args, callback) => {
     // save all time callback
     if (!args.period) {
       listener = callback;
@@ -89,7 +89,7 @@ it('marks LeaderDisplay as loading until callback called', () => {
 
 it('passes callback response to LeaderDisplay trader prop', () => {
   let listener = null;
-  ctx.traderService.subscribeToTopTraders.callsFake((args, callback) => {
+  ctx.traderService.observeTopTraders.callsFake((args, callback) => {
     // save all time callback
     if (!args.period) {
       listener = callback;

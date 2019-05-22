@@ -1,15 +1,15 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import './Header.css';
 import { NavLink } from 'react-router-dom';
+import useTraderInfo from '../../hooks/useTraderInfo';
 import LabeledBadge from './LabeledBadge/LabeledBadge';
 import AccountMenu from './AccountMenu/AccountMenu';
 import AppContext from '../../AppContext';
 
 const Header = ({ closeMenu }) => {
   const app = useContext(AppContext);
-  const score = useTraderScore(app.trader);
-  const rank = useTraderRank(app.trader);
+  const [info] = useTraderInfo(app.trader, ['score', 'rank']);
 
   return (
     <div className="header-inner">
@@ -22,8 +22,8 @@ const Header = ({ closeMenu }) => {
         <li><NavLink onClick={closeMenu} activeClassName="active" to="/leaders">Leaders</NavLink></li>
       </ul>
 
-      {(score) ? <LabeledBadge className="score" label="Score" value={score} /> : ''}
-      {(rank) ? <LabeledBadge className="rank" label="Rank" value={rank} /> : ''}
+      {(info.score) ? <LabeledBadge className="score" label="Score" value={info.score} /> : ''}
+      {(info.rank) ? <LabeledBadge className="rank" label="Rank" value={info.rank} /> : ''}
 
       <AccountMenu closeMenu={closeMenu} />
     </div>
@@ -37,33 +37,5 @@ Header.propTypes = {
 Header.defaultProps = {
   closeMenu: () => {},
 };
-
-function useTraderScore(trader) {
-  const [score, setScore] = useState(null);
-
-  useEffect(() => {
-    if (trader.id) {
-      return trader.subscribeToScore(newScore => setScore(newScore));
-    }
-
-    return () => {};
-  }, [trader.id]);
-
-  return score;
-}
-
-function useTraderRank(trader) {
-  const [rank, setRank] = useState(null);
-
-  useEffect(() => {
-    if (trader.id) {
-      return trader.subscribeToRank(newRank => setRank(newRank));
-    }
-
-    return () => {};
-  }, [trader.id]);
-
-  return rank;
-}
 
 export default Header;

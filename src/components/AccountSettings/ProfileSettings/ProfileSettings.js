@@ -6,14 +6,19 @@ import Alert from 'react-bootstrap/Alert';
 import Spinner from 'react-bootstrap/Spinner';
 import AppContext from '../../../AppContext';
 import TraderImg from '../../TraderImg/TraderImg';
+import useTraderInfo from '../../../hooks/useTraderInfo';
 import './ProfileSettings.css';
 
 const ProfileSettings = () => {
   const app = useContext(AppContext);
 
-  const [bio, setBio] = useState('');
+  // eslint-disable-next-line no-unused-vars
+  const [info, loading, error] = useTraderInfo(app.trader, ['bio']);
 
-  const fetchError = useTraderInfo(app.trader, ['bio'], { bio: setBio });
+  const [bio, setBio] = useState('');
+  useEffect(() => {
+    setBio(info.bio);
+  }, [info.bio]);
 
   const [
     updateUser,
@@ -50,7 +55,7 @@ const ProfileSettings = () => {
           </Button>
         </Card.Header>
         <Card.Body>
-          {fetchError && (<Alert variant="danger">{fetchError}</Alert>)}
+          {error && (<Alert variant="danger">{error.message}</Alert>)}
           {updateError && (
             <Alert dismissible className="save-error" variant="danger">{updateError}</Alert>
           )}
@@ -78,7 +83,7 @@ const ProfileSettings = () => {
               <Upload
                 trader={app.trader}
                 uploadKey="profilePhoto"
-                render={(upload, progress, error) => (
+                render={(upload, progress, uploadError) => (
                   <div className="file-upload-wrap">
                     {progress === false && (
                       <div>
@@ -108,9 +113,9 @@ const ProfileSettings = () => {
                       </div>
                     )}
 
-                    {error && (
+                    {uploadError && (
                       <Alert dismissible className="upload-profile-photo-error" variant="danger">
-                        {error}
+                        {uploadError}
                       </Alert>
                     )}
                   </div>
@@ -123,27 +128,6 @@ const ProfileSettings = () => {
     </div>
   );
 };
-
-function useTraderInfo(trader, args, setters) {
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const info = await trader.get(args, false);
-        Object.keys(info).forEach((key) => {
-          if (setters[key]) {
-            setters[key](info[key]);
-          }
-        });
-      } catch (e) {
-        setError(e.message);
-      }
-    })();
-  }, [trader.id]);
-
-  return error;
-}
 
 function useUpdateUser(trader, data) {
   const [loading, setLoading] = useState(false);
