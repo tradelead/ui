@@ -14,6 +14,12 @@ import ExchangeKeys from './ExchangeKeys';
 const sleep = async ms => new Promise(resolve => setTimeout(resolve, ms));
 
 const ctx = {
+  async getExchanges() {
+    return {
+      binance: 'Binance',
+      bittrex: 'Bittrex',
+    };
+  },
   trader: {
     id: 'test',
     observe: sinon.stub(),
@@ -37,6 +43,22 @@ describe('adding key', () => {
     const wrapper = shallow(component).dive();
     wrapper.find({ className: 'add-key' }).find(Button).simulate('click');
     expect(wrapper.find(Modal)).toHaveProp('show', true);
+  });
+
+  it('shows exchanges from app context', async () => {
+    const component = setup();
+    const wrapper = await asyncMountWrapper(component);
+    wrapper.find({ className: 'add-key' }).find(Button).simulate('click');
+
+    const exchanges = await ctx.getExchanges();
+    Object.keys(exchanges).forEach((exchangeID) => {
+      const optionWrapper = wrapper
+        .find({ controlId: 'formExchangeID' })
+        .find({ value: exchangeID });
+
+      expect(optionWrapper).toExist();
+      expect(optionWrapper.text()).toEqual(exchanges[exchangeID]);
+    });
   });
 
   it('close modal onHide', () => {

@@ -21,6 +21,12 @@ function App() {
       logout: () => {},
     },
     trader: mockTrader,
+    async getExchanges() {
+      return {
+        binance: 'Binance',
+        bittrex: 'Bittrex',
+      };
+    },
     traderService: {
       observeTopTraders({ limit }, callback) {
         const traders = new Array(limit).fill({

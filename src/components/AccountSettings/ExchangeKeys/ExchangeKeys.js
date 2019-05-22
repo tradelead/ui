@@ -13,6 +13,8 @@ import './ExchangeKeys.css';
 const ExchangeKeys = () => {
   const app = useContext(AppContext);
 
+  const exchanges = useExchanges(app);
+
   const [showModal, setShowModal] = useState(false);
   const [addKeyError, setAddKeyError] = useState('');
   const [addingKey, setAddingKey] = useState(false);
@@ -22,7 +24,6 @@ const ExchangeKeys = () => {
 
   // eslint-disable-next-line no-unused-vars
   const [info, loading, error] = useTraderInfo(app.trader, ['exchangeKeys']);
-  console.log({ info, loading, error });
 
   const [exchangeKeys, setExchangeKeys] = useState([]);
   useEffect(() => {
@@ -158,7 +159,9 @@ const ExchangeKeys = () => {
                 required
                 onChange={(e) => { setExchangeID(e.target.value); }}
               >
-                <option value="binance">Binance</option>
+                {Object.keys(exchanges).map(id => (
+                  <option key={id} value={id}>{exchanges[id]}</option>
+                ))}
               </Form.Control>
             </Form.Group>
 
@@ -212,5 +215,17 @@ const ExchangeKeys = () => {
     </div>
   );
 };
+
+function useExchanges(app) {
+  const [exchanges, setExchanges] = useState({});
+  useEffect(() => {
+    (async () => {
+      const newExchanges = await app.getExchanges();
+      setExchanges(newExchanges);
+    })();
+  }, []);
+
+  return exchanges;
+}
 
 export default ExchangeKeys;
