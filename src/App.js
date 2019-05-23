@@ -90,20 +90,6 @@ function getMockTrader() {
   return {
     id: 'trader123',
     username: 'tradername123',
-    observeScoreHistory(opts, callback) {
-      const DAY_SEC = 24 * 60 * 60 * 1000;
-      const scoreHistory = [
-        { time: Date.now() - DAY_SEC * 3, score: 100 },
-        { time: Date.now() - DAY_SEC * 2.5, score: 115 },
-        { time: Date.now() - DAY_SEC * 2.49, score: 110 },
-        { time: Date.now() - DAY_SEC * 2, score: 125 },
-        { time: Date.now() - DAY_SEC * 1.5, score: 105 },
-        { time: Date.now() - DAY_SEC * 1.1, score: 150 },
-        { time: Date.now() - DAY_SEC, score: 140 },
-      ];
-
-      setTimeout(() => callback(scoreHistory), 280);
-    },
     observe(args, callback) {
       (async () => {
         // callback(rsp, loading, error);
@@ -115,6 +101,19 @@ function getMockTrader() {
 
         if (keys.includes('score')) {
           rsp.score = 123;
+        }
+
+        if (keys.includes('scores')) {
+          const DAY_SEC = 24 * 60 * 60 * 1000;
+          rsp.scores = [
+            { time: Date.now() - DAY_SEC * 3, score: 100 },
+            { time: Date.now() - DAY_SEC * 2.5, score: 115 },
+            { time: Date.now() - DAY_SEC * 2.49, score: 110 },
+            { time: Date.now() - DAY_SEC * 2, score: 125 },
+            { time: Date.now() - DAY_SEC * 1.5, score: 105 },
+            { time: Date.now() - DAY_SEC * 1.1, score: 150 },
+            { time: Date.now() - DAY_SEC, score: 140 },
+          ];
         }
 
         if (keys.includes('rank')) {

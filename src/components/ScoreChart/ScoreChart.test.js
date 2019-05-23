@@ -24,12 +24,12 @@ beforeEach(() => {
   req = {
     trader: {
       id: 'trader123',
-      observeScoreHistory: sinon.stub(),
+      observe: sinon.stub(),
     },
   };
 
   scoreHistoryListener = null;
-  req.trader.observeScoreHistory.callsFake((_, listener) => {
+  req.trader.observe.callsFake((_, listener) => {
     scoreHistoryListener = listener;
     return () => {
     };
@@ -43,62 +43,67 @@ describe('filters', () => {
 
     await sleep(0);
 
-    sinon.assert.calledWith(req.trader.observeScoreHistory, {
+    sinon.assert.calledWith(req.trader.observe, [{
+      key: 'scores',
       duration: 30,
-    }, sinon.match.func);
+    }], sinon.match.func);
   });
 
   it('fetches score history with duration of 1 when "today" filter clicked', async () => {
     const { component } = setup(req);
     const el = mount(component);
-    req.trader.observeScoreHistory.reset();
+    req.trader.observe.reset();
     el.find('.Today').simulate('click');
 
     await sleep(0);
 
-    sinon.assert.calledWith(req.trader.observeScoreHistory, {
+    sinon.assert.calledWith(req.trader.observe, [{
+      key: 'scores',
       duration: 1,
-    }, sinon.match.func);
+    }], sinon.match.func);
   });
 
   it('fetches score history with duration of 1 when "week" filter clicked', async () => {
     const { component } = setup(req);
     const el = mount(component);
-    req.trader.observeScoreHistory.reset();
+    req.trader.observe.reset();
     el.find('.Week').simulate('click');
 
     await sleep(0);
 
-    sinon.assert.calledWith(req.trader.observeScoreHistory, {
+    sinon.assert.calledWith(req.trader.observe, [{
+      key: 'scores',
       duration: 7,
-    }, sinon.match.func);
+    }], sinon.match.func);
   });
 
   it('fetches score history with duration of 30 when "month" filter clicked', async () => {
     const { component } = setup(req);
     const el = mount(component);
     el.find('.Week').simulate('click');
-    req.trader.observeScoreHistory.reset();
+    req.trader.observe.reset();
     el.find('.Month').simulate('click');
 
     await sleep(0);
 
-    sinon.assert.calledWith(req.trader.observeScoreHistory, {
+    sinon.assert.calledWith(req.trader.observe, [{
+      key: 'scores',
       duration: 30,
-    }, sinon.match.func);
+    }], sinon.match.func);
   });
 
   it('fetches score history with duration of 0 when "all" filter clicked', async () => {
     const { component } = setup(req);
     const el = mount(component);
-    req.trader.observeScoreHistory.reset();
+    req.trader.observe.reset();
     el.find('.All').simulate('click');
 
     await sleep(0);
 
-    sinon.assert.calledWith(req.trader.observeScoreHistory, {
+    sinon.assert.calledWith(req.trader.observe, [{
+      key: 'scores',
       duration: 0,
-    }, sinon.match.func);
+    }], sinon.match.func);
   });
 });
 

@@ -76,10 +76,10 @@ function useTraderScoreHistory({ trader, duration }) {
   useEffect(() => {
     if (trader.id) {
       setLoading(true);
-      return trader.observeScoreHistory(
-        { duration },
-        (newScoreHistory) => {
-          setScoreHistory(newScoreHistory);
+      return trader.observe(
+        [{ key: 'scores', duration }],
+        (data) => {
+          setScoreHistory(data.scores || []);
           setLoading(false);
         },
       );
