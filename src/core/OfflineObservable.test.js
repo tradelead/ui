@@ -13,14 +13,14 @@ beforeEach(() => {
     ttl: sinon.stub(),
   });
 
-  observable.offlineFetcher = {
+  observable.offlineStorage = {
     fetch: sinon.stub(),
   };
 
   observable.fieldKey.callsFake(field => (typeof field === 'string' ? field : field.key));
   observable.ttl.returns(5000);
 
-  observable.offlineFetcher.fetch.callsFake((key, ttl, fetch) => (async () => [
+  observable.offlineStorage.fetch.callsFake((key, ttl, fetch) => (async () => [
     null,
     (async () => fetch())(),
   ])());
@@ -50,7 +50,7 @@ describe('observe', () => {
 
   describe('fetch', () => {
     it('sends offline data first then fetch', async () => {
-      observable.offlineFetcher.fetch.callsFake((key, ttl, fetch) => (async () => [
+      observable.offlineStorage.fetch.callsFake((key, ttl, fetch) => (async () => [
         'test-initial',
         (async () => fetch())(),
       ])());
@@ -64,7 +64,7 @@ describe('observe', () => {
     }, 500);
 
     it('sends loading false if not awaiting fetch', async () => {
-      observable.offlineFetcher.fetch.callsFake(() => (async () => [
+      observable.offlineStorage.fetch.callsFake(() => (async () => [
         'test-initial',
         null,
       ])());
@@ -73,7 +73,7 @@ describe('observe', () => {
     }, 500);
 
     it('sends error from offline data', async () => {
-      observable.offlineFetcher.fetch.rejects(new Error('test error'));
+      observable.offlineStorage.fetch.rejects(new Error('test error'));
       await awaitObserveRsp(
         ['bio'],
         [
@@ -152,10 +152,10 @@ describe('observe', () => {
       observable.observe(['bio'], () => {});
       await expectObserveData(observer, { bio: 'test-fetch' });
 
-      observable.offlineFetcher.fetch.resetHistory();
+      observable.offlineStorage.fetch.resetHistory();
       clock.tick(5000);
 
-      sinon.assert.calledOnce(observable.offlineFetcher.fetch);
+      sinon.assert.calledOnce(observable.offlineStorage.fetch);
     }, 500);
 
     it('doesn\'t re-fetch data after ttl once all observers are disposed', async () => {
@@ -171,11 +171,11 @@ describe('observe', () => {
       dispose2();
 
       observer.fn = sinon.stub();
-      observable.offlineFetcher.fetch.resetHistory();
+      observable.offlineStorage.fetch.resetHistory();
       clock.tick(5000);
 
       sinon.assert.notCalled(observer.fn);
-      sinon.assert.notCalled(observable.offlineFetcher.fetch);
+      sinon.assert.notCalled(observable.offlineStorage.fetch);
     }, 500);
   });
 
@@ -201,7 +201,7 @@ describe('observe', () => {
 
       observable.fieldKey.callsFake(field => (typeof field === 'string' ? field : field.key));
 
-      observable.offlineFetcher = {
+      observable.offlineStorage = {
         update: sinon.stub(),
         get: sinon.stub(),
       };
@@ -231,7 +231,7 @@ describe('observe', () => {
       ]);
     }, 500);
 
-    it('updates from subscribe callback update offlineFetcher', async () => {
+    it('updates from subscribe callback update offlineStorage', async () => {
       let subscribeCallback;
       observable.subscribe.callsFake((field, callback) => {
         subscribeCallback = callback;
@@ -239,7 +239,7 @@ describe('observe', () => {
 
       observable.observe(['bio'], () => {});
       subscribeCallback({ data: { test: 1 } });
-      sinon.assert.calledWith(observable.offlineFetcher.update, sinon.match.any, { test: 1 });
+      sinon.assert.calledWith(observable.offlineStorage.update, sinon.match.any, { test: 1 });
     });
 
     it('won\'t update undefined values', async () => {
@@ -304,8 +304,8 @@ describe('observe', () => {
       await assert;
     }, 500);
 
-    it('returns initial data from offlineFetcher.get', async () => {
-      observable.offlineFetcher.get.resolves('test');
+    it('returns initial data from offlineStorage.get', async () => {
+      observable.offlineStorage.get.resolves('test');
 
       await awaitObserveRsp(['bio'], [
         data => data.bio === 'test',

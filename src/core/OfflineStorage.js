@@ -1,4 +1,4 @@
-export default class OfflineFetcher {
+export default class OfflineStorage {
   // eslint-disable-next-line class-methods-use-this
   async fetch(key, ttl, fetch) {
     const { data, time } = JSON.parse(localStorage.getItem(key)) || {};

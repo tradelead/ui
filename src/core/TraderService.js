@@ -1,12 +1,12 @@
 export default class TraderService {
-  constructor({ accountService, offlineFetcher }) {
+  constructor({ accountService, offlineStorage }) {
     this.accountService = accountService;
-    this.offlineFetcher = offlineFetcher;
+    this.offlineStorage = offlineStorage;
   }
 
   async getTrader(id) {
     const fetchFromSource = async userID => this.accountService.getUser(userID);
-    const [initialData, refetchedDataProm] = await this.offlineFetcher.fetch(
+    const [initialData, refetchedDataProm] = await this.offlineStorage.fetch(
       `trader-${id}`,
       24 * 60 * 60 * 1000,
       async () => fetchFromSource(id),

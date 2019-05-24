@@ -11,12 +11,12 @@ beforeEach(() => {
     traderScoreService: {
       getTopTraders: sinon.stub(),
     },
-    offlineFetcher: {
+    offlineStorage: {
       fetch: sinon.stub(),
     },
   });
 
-  traderService.offlineFetcher.fetch.callsFake((key, ttl, fetch) => (async () => [
+  traderService.offlineStorage.fetch.callsFake((key, ttl, fetch) => (async () => [
     null,
     (async () => fetch())(),
   ])());
@@ -38,7 +38,7 @@ describe('getTrader', () => {
 
   it('returns offline data if not expired', async () => {
     const offlineData = { test: 1 };
-    traderService.offlineFetcher.fetch.callsFake(() => (async () => [
+    traderService.offlineStorage.fetch.callsFake(() => (async () => [
       offlineData,
       null,
     ])());
@@ -48,7 +48,7 @@ describe('getTrader', () => {
 
   it('returns offline data if fetch throws error', async () => {
     const offlineData = { test: 1 };
-    traderService.offlineFetcher.fetch.callsFake(() => (async () => [
+    traderService.offlineStorage.fetch.callsFake(() => (async () => [
       offlineData,
       (async () => { throw new Error('Network Error'); })(),
     ])());

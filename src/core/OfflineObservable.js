@@ -2,7 +2,7 @@ import { decorate, observable, reaction } from 'mobx';
 import { computedFn } from 'mobx-utils';
 import hash from 'object-hash';
 import combineError from 'combine-errors';
-import OfflineFetcher from './OfflineFetcher';
+import OfflineStorage from './OfflineStorage';
 
 class OfflineObservable {
   store = {};
@@ -50,7 +50,7 @@ class OfflineObservable {
     this.fetch = fetch;
     this.subscribe = subscribe;
     this.ttl = ttl;
-    this.offlineFetcher = new OfflineFetcher();
+    this.offlineStorage = new OfflineStorage();
   }
 
   observe(fields, callback) {
@@ -111,7 +111,7 @@ class OfflineObservable {
     const fieldHash = hash(field);
 
     (async () => {
-      const initial = await this.offlineFetcher.get(fieldHash);
+      const initial = await this.offlineStorage.get(fieldHash);
       if (typeof this.store[fieldHash].data === 'undefined') {
         this.store[fieldHash].data = initial;
         this.store[fieldHash].loading = true;
@@ -128,7 +128,7 @@ class OfflineObservable {
       }
 
       if (typeof data !== 'undefined') {
-        this.offlineFetcher.update(fieldHash, data);
+        this.offlineStorage.update(fieldHash, data);
         this.store[fieldHash].data = data;
       }
 
@@ -147,7 +147,7 @@ class OfflineObservable {
     const fieldHash = hash(field);
 
     try {
-      const [initialData, refetchedDataProm] = await this.offlineFetcher.fetch(
+      const [initialData, refetchedDataProm] = await this.offlineStorage.fetch(
         fieldHash,
         this.ttl(field),
         async () => this.fetch(field),
