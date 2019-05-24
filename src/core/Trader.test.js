@@ -1,9 +1,5 @@
 import sinon from 'sinon';
-import isEqual from 'lodash.isequal';
 import Trader from './Trader';
-import MockFile from '../components/AccountSettings/ProfileSettings/MockFile';
-
-const clock = sinon.useFakeTimers();
 
 let mockTrader;
 
@@ -19,275 +15,125 @@ beforeEach(() => {
       signUpload: sinon.stub(),
     },
     traderScoreService: { getTraderData: sinon.stub() },
-    offlineFetcher: { fetch: sinon.stub() },
   });
-
-  mockTrader.offlineFetcher.fetch.callsFake((key, ttl, fetch) => (async () => [
-    null,
-    (async () => fetch())(),
-  ])());
 });
 
-describe('observe', () => {
-  const awaitObserveRsp = (args, expectRsp) => new Promise(async (resolve) => {
-    const compare = (value, expected) => {
-      if (typeof expected === 'function') {
-        return expected(value);
-      }
+describe('fieldKey', () => {
+  it('returns if string', () => {
+    expect(Trader.fieldKey('bio')).toEqual('bio');
+  });
 
-      return isEqual(value, expected);
+  it('returns key if object', () => {
+    expect(Trader.fieldKey({ key: 'bio' })).toEqual('bio');
+  });
+});
+
+describe('ttl', () => {
+  const verifyTTL = (field, expectedTTL) => {
+    const ttl = mockTrader.ttl(field);
+    expect(ttl).toEqual(expectedTTL);
+  };
+
+  test('bio ttl is 2 hours', async () => {
+    verifyTTL('bio', 2 * 60 * 60 * 1000);
+  });
+
+  test('website ttl is 2 hours', async () => {
+    verifyTTL('website', 2 * 60 * 60 * 1000);
+  });
+
+  test('exchangeKeys ttl is 30 seconds', async () => {
+    verifyTTL('exchangeKeys', 30 * 1000);
+  });
+
+  test('score ttl is 60 seconds', async () => {
+    verifyTTL('score', 60 * 1000);
+  });
+
+  test('rank ttl is 60 seconds', async () => {
+    verifyTTL('rank', 60 * 1000);
+  });
+
+  test('scores ttl is 60 seconds', async () => {
+    verifyTTL('scores', 60 * 1000);
+  });
+});
+
+describe('fetch', () => {
+  const verifyFetchRsp = async (field, expectedRsp) => {
+    const rsp = await mockTrader.fetch(field);
+    expect(rsp).toEqual(expectedRsp);
+  };
+
+  it('returns bio from accountService', async () => {
+    const field = 'bio';
+    const bio = 'this is my bio';
+
+    mockTrader.accountService.getUserData
+      .withArgs(mockTrader.id, [field])
+      .resolves({ bio });
+
+    await verifyFetchRsp(field, bio);
+  }, 100);
+
+  it('returns website from accountService', async () => {
+    const field = 'website';
+    const website = 'http://test.com/test';
+
+    mockTrader.accountService.getUserData
+      .withArgs(mockTrader.id, [field])
+      .resolves({ website });
+
+    await verifyFetchRsp(field, website);
+  }, 100);
+
+  it('returns exchangeKeys from accountService', async () => {
+    const field = 'exchangeKeys';
+    const exchangeKeys = [{ test: 1 }, { test: 2 }];
+
+    mockTrader.accountService.getUserData
+      .withArgs(mockTrader.id, [field])
+      .resolves({ exchangeKeys });
+
+    await verifyFetchRsp(field, exchangeKeys);
+  });
+
+  it('returns score from traderScoreService', async () => {
+    const field = 'score';
+    const score = 123;
+
+    mockTrader.traderScoreService.getTraderData
+      .withArgs(mockTrader.id, [field])
+      .resolves({ score });
+
+    await verifyFetchRsp(field, score);
+  });
+
+  it('returns rank from traderScoreService', async () => {
+    const field = 'rank';
+    const rank = 123;
+
+    mockTrader.traderScoreService.getTraderData
+      .withArgs(mockTrader.id, [field])
+      .resolves({ rank });
+
+    await verifyFetchRsp(field, rank);
+  });
+
+  it('returns scores from traderScoreService', async () => {
+    const field = {
+      key: 'scores',
+      period: 'day',
+      duration: 24 * 60 * 60 * 1000,
     };
+    const scores = [123];
 
-    const dispose = mockTrader.observe(args, (...rsp) => {
-      const dataValid = compare(rsp[0], expectRsp[0]);
-      const loadingValid = compare(rsp[1], expectRsp[1]);
-      const errorValid = compare(rsp[2], expectRsp[2]);
+    mockTrader.traderScoreService.getTraderData
+      .withArgs(mockTrader.id, [field])
+      .resolves({ scores });
 
-      if (dataValid && loadingValid && errorValid) {
-        resolve(true);
-        dispose();
-      }
-    });
+    await verifyFetchRsp(field, scores);
   });
-
-  describe('verify field source', () => {
-    it('returns bio from accountService', async () => {
-      const bio = 'this is my bio';
-
-      mockTrader.accountService.getUserData
-        .withArgs(mockTrader.id, ['bio'])
-        .resolves({ bio });
-
-      const expectRsp = [{ bio }, false, undefined];
-      await awaitObserveRsp(['bio'], expectRsp);
-    }, 100);
-
-    it('returns website from accountService', async () => {
-      const website = 'http://test.com/test';
-
-      mockTrader.accountService.getUserData
-        .withArgs(mockTrader.id, ['website'])
-        .resolves({ website });
-
-      const expectRsp = [{ website }, false, undefined];
-      await awaitObserveRsp(['website'], expectRsp);
-    }, 100);
-
-    it('returns exchangeKeys from accountService', async () => {
-      const exchangeKeys = [{ test: 1 }, { test: 2 }];
-
-      mockTrader.accountService.getUserData
-        .withArgs(mockTrader.id, ['exchangeKeys'])
-        .resolves({ exchangeKeys });
-
-      const expectRsp = [{ exchangeKeys }, false, undefined];
-      await awaitObserveRsp(['exchangeKeys'], expectRsp);
-    });
-
-    it('returns score from traderScoreService', async () => {
-      const score = 123;
-
-      mockTrader.traderScoreService.getTraderData
-        .withArgs(mockTrader.id, ['score'])
-        .resolves({ score });
-
-      const expectRsp = [{ score }, false, undefined];
-      await awaitObserveRsp(['score'], expectRsp);
-    });
-
-    it('returns rank from traderScoreService', async () => {
-      const rank = 123;
-
-      mockTrader.traderScoreService.getTraderData
-        .withArgs(mockTrader.id, ['rank'])
-        .resolves({ rank });
-
-      const expectRsp = [{ rank }, false, undefined];
-      await awaitObserveRsp(['rank'], expectRsp);
-    });
-
-    it('returns scores from traderScoreService', async () => {
-      const scores = 123;
-      const args = [{
-        key: 'scores',
-        period: 'day',
-        duration: 24 * 60 * 60 * 1000,
-      }];
-
-      mockTrader.traderScoreService.getTraderData
-        .withArgs(mockTrader.id, args)
-        .resolves({ scores });
-
-      const expectRsp = [{ scores }, false, undefined];
-      await awaitObserveRsp(args, expectRsp);
-    });
-  });
-
-  describe('verify offline fetch field ttl', () => {
-    const verifyTTL = (key, ttl) => {
-      mockTrader.observe([key], () => {});
-
-      sinon.assert.calledWith(
-        mockTrader.offlineFetcher.fetch,
-        sinon.match.any,
-        ttl,
-        sinon.match.any,
-      );
-    };
-
-    test('bio ttl is 2 hours', async () => {
-      verifyTTL('bio', 2 * 60 * 60 * 1000);
-    });
-
-    test('website ttl is 2 hours', async () => {
-      verifyTTL('website', 2 * 60 * 60 * 1000);
-    });
-
-    test('exchangeKeys ttl is 30 seconds', async () => {
-      verifyTTL('exchangeKeys', 30 * 1000);
-    });
-
-    test('score ttl is 60 seconds', async () => {
-      verifyTTL('score', 60 * 1000);
-    });
-
-    test('rank ttl is 60 seconds', async () => {
-      verifyTTL('rank', 60 * 1000);
-    });
-
-    test('scores ttl is 60 seconds', async () => {
-      verifyTTL('scores', 60 * 1000);
-    });
-  });
-
-  it('sends offline data first then fetch', async () => {
-    mockTrader.offlineFetcher.fetch.callsFake((key, ttl, fetch) => (async () => [
-      'test-initial',
-      (async () => fetch())(),
-    ])());
-
-    mockTrader.accountService.getUserData
-      .withArgs(mockTrader.id, ['bio'])
-      .resolves({ bio: 'test-fetch' });
-
-    await awaitObserveRsp(['bio'], [{ bio: 'test-initial' }, true, undefined]);
-    await awaitObserveRsp(['bio'], [{ bio: 'test-fetch' }, false, undefined]);
-  }, 500);
-
-  it('sends loading false if not awaiting fetch', async () => {
-    mockTrader.offlineFetcher.fetch.callsFake(() => (async () => [
-      'test-initial',
-      null,
-    ])());
-
-    await awaitObserveRsp(['bio'], [{ bio: 'test-initial' }, false, undefined]);
-  });
-
-  it('sends error from offline data', async () => {
-    mockTrader.offlineFetcher.fetch.rejects(new Error('test error'));
-    await awaitObserveRsp(
-      ['bio'],
-      [
-        () => true,
-        loading => loading === false,
-        err => err.message === 'test error',
-      ],
-    );
-  }, 500);
-
-  it('sends error from fetch', async () => {
-    mockTrader.accountService.getUserData.rejects(new Error('test error'));
-    await awaitObserveRsp(
-      ['bio'],
-      [
-        () => true,
-        loading => loading === false,
-        (err) => { const e = err || {}; return e.message === 'test error'; },
-      ],
-    );
-  }, 500);
-
-  it('sends errors from multiple fetch', async () => {
-    mockTrader.accountService.getUserData
-      .withArgs(mockTrader.id, ['bio'])
-      .rejects(new Error('test error'));
-
-    mockTrader.accountService.getUserData
-      .withArgs(mockTrader.id, ['website'])
-      .rejects(new Error('test error 2'));
-
-    await awaitObserveRsp(
-      ['bio', 'website'],
-      [
-        () => true,
-        loading => loading === false,
-        (err) => { const e = err || {}; return e.message === 'test error; test error 2'; },
-      ],
-    );
-  }, 500);
-
-  const expectObserveData = (observer, expectData) => new Promise((resolve) => {
-    // eslint-disable-next-line no-param-reassign
-    observer.fn = (data) => {
-      if (isEqual(data, expectData)) {
-        resolve();
-      }
-    };
-  });
-
-  it('re-fetches data after ttl', async () => {
-    mockTrader.accountService.getUserData
-      .withArgs(mockTrader.id, ['bio'])
-      .resolves({ bio: 'test-fetch' });
-
-    const observer = { fn: () => {} };
-    mockTrader.observe(['bio'], (...rsp) => observer.fn(...rsp));
-    await expectObserveData(observer, { bio: 'test-fetch' });
-
-    mockTrader.accountService.getUserData
-      .withArgs(mockTrader.id, ['bio'])
-      .resolves({ bio: 'test-fetch2' });
-
-    clock.tick(2 * 60 * 60 * 1000);
-
-    await expectObserveData(observer, { bio: 'test-fetch2' });
-  }, 500);
-
-  it('re-fetches data after ttl once for multiple observers of same field', async () => {
-    mockTrader.accountService.getUserData
-      .withArgs(mockTrader.id, ['bio'])
-      .resolves({ bio: 'test-fetch' });
-
-    const observer = { fn: () => {} };
-    mockTrader.observe(['bio'], (...rsp) => observer.fn(...rsp));
-    mockTrader.observe(['bio'], () => {});
-    await expectObserveData(observer, { bio: 'test-fetch' });
-
-    mockTrader.offlineFetcher.fetch.resetHistory();
-    clock.tick(2 * 60 * 60 * 1000);
-
-    sinon.assert.calledOnce(mockTrader.offlineFetcher.fetch);
-  }, 500);
-
-  it('doesn\'t re-fetch data after ttl once all observers are disposed', async () => {
-    mockTrader.accountService.getUserData
-      .withArgs(mockTrader.id, ['bio'])
-      .resolves({ bio: 'test-fetch' });
-
-    const observer = { fn: () => {} };
-    const dispose1 = mockTrader.observe(['bio'], (...rsp) => observer.fn(...rsp));
-    const dispose2 = mockTrader.observe(['bio'], () => {});
-    await expectObserveData(observer, { bio: 'test-fetch' });
-    dispose1();
-    dispose2();
-
-    observer.fn = sinon.stub();
-    mockTrader.offlineFetcher.fetch.resetHistory();
-    clock.tick(2 * 60 * 60 * 1000);
-
-    sinon.assert.notCalled(observer.fn);
-    sinon.assert.notCalled(mockTrader.offlineFetcher.fetch);
-  }, 500);
 });
 
 describe('upload', () => {

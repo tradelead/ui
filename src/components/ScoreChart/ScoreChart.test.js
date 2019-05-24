@@ -5,7 +5,10 @@ import { mount } from 'enzyme';
 import ScoreChart from './ScoreChart';
 
 jest.mock('./LineChart/LineChart', () => (
-  props => <div className="test-line-chart">{JSON.stringify(props)}</div>
+  // eslint-disable-next-line func-names
+  function MockLineChart() {
+    return <div />;
+  }
 ));
 
 // eslint-disable-next-line react/prop-types
@@ -31,8 +34,7 @@ beforeEach(() => {
   scoreHistoryListener = null;
   req.trader.observe.callsFake((_, listener) => {
     scoreHistoryListener = listener;
-    return () => {
-    };
+    return () => {};
   });
 });
 
@@ -117,12 +119,17 @@ describe('chart data', () => {
     await sleep(0);
 
     act(() => {
-      scoreHistoryListener([
-        { time: 100, score: 1 },
-        { time: 200, score: 2 },
-        { time: 300, score: 3 },
-      ]);
+      scoreHistoryListener({
+        scores: [
+          { time: 100, score: 1 },
+          { time: 200, score: 2 },
+          { time: 300, score: 3 },
+        ],
+      });
     });
+
+    wrapper.update();
+    await sleep(0);
   });
 
   it('sets growth as percentage different between first and last scores', async () => {
@@ -137,11 +144,13 @@ describe('chart data', () => {
 
   it('sets growth as percentage different between first and last scores when 2 days', async () => {
     act(() => {
-      scoreHistoryListener([
-        { time: 100, score: 1 },
-        { time: 200, score: 2 },
-        { time: (2 * 24 * 60 * 60 * 1000) + 100, score: 3 },
-      ]);
+      scoreHistoryListener({
+        scores: [
+          { time: 100, score: 1 },
+          { time: 200, score: 2 },
+          { time: (2 * 24 * 60 * 60 * 1000) + 100, score: 3 },
+        ],
+      });
     });
 
     await sleep(0);
@@ -153,13 +162,28 @@ describe('chart data', () => {
 
   it('passes score data to LineChart', async () => {
     const expectedChartData = [
-      { time: 100, value: 1, date: new Date(100).toISOString(), dateFormatted: 'Dec 31 @ 07 PM' },
-      { time: 200, value: 2, date: new Date(200).toISOString(), dateFormatted: 'Dec 31 @ 07 PM' },
-      { time: 300, value: 3, date: new Date(300).toISOString(), dateFormatted: 'Dec 31 @ 07 PM' },
+      {
+        time: 100,
+        value: 1,
+        date: new Date(100),
+        dateFormatted: 'Dec 31 @ 07 PM',
+      },
+      {
+        time: 200,
+        value: 2,
+        date: new Date(200),
+        dateFormatted: 'Dec 31 @ 07 PM',
+      },
+      {
+        time: 300,
+        value: 3,
+        date: new Date(300),
+        dateFormatted: 'Dec 31 @ 07 PM',
+      },
     ];
 
-    expect(wrapper.find('.test-line-chart')).toExist();
-    // this is a hack because shallow rendering isn't supported in hooks yet.
-    expect(JSON.parse(wrapper.find('.test-line-chart').text())).toHaveProperty('data', expectedChartData);
+    console.log(wrapper.find('MockLineChart').debug());
+    expect(wrapper.find('MockLineChart')).toExist();
+    expect(wrapper.find('MockLineChart').prop('data')).toEqual(expectedChartData);
   });
 });
