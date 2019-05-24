@@ -1,18 +1,28 @@
 export default class OfflineStorage {
   // eslint-disable-next-line class-methods-use-this
   async fetch(key, ttl, fetch) {
-    const { data, time } = JSON.parse(localStorage.getItem(key)) || {};
+    const { data, time } = await this.get(key);
 
     let refetchedDataProm;
 
     if (typeof data === 'undefined' || time + ttl < Date.now()) {
       refetchedDataProm = (async () => {
         const res = await fetch();
-        localStorage.setItem(key, JSON.stringify({ data: res, time: Date.now() }));
+        this.update(key, res);
         return res;
       })();
     }
 
     return [data, refetchedDataProm];
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  async get(key) {
+    return JSON.parse(localStorage.getItem(key)) || {};
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  async update(key, value) {
+    localStorage.setItem(key, JSON.stringify({ data: value, time: Date.now() }));
   }
 }
