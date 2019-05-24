@@ -111,9 +111,9 @@ class OfflineObservable {
     const fieldHash = hash(field);
 
     (async () => {
-      const initial = await this.offlineStorage.get(fieldHash);
+      const { data } = await this.offlineStorage.get(fieldHash) || {};
       if (typeof this.store[fieldHash].data === 'undefined') {
-        this.store[fieldHash].data = initial;
+        this.store[fieldHash].data = data;
         this.store[fieldHash].loading = true;
       }
     })();

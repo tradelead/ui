@@ -305,7 +305,7 @@ describe('observe', () => {
     }, 500);
 
     it('returns initial data from offlineStorage.get', async () => {
-      observable.offlineStorage.get.resolves('test');
+      observable.offlineStorage.get.resolves({ data: 'test', time: 123 });
 
       await awaitObserveRsp(['bio'], [
         data => data.bio === 'test',

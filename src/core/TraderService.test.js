@@ -56,11 +56,38 @@ describe('getTrader', () => {
 });
 
 describe('observeTopTraders', () => {
-  it('fetches from traderScoreService.getTopTraders', async () => {
-
+  beforeEach(() => {
+    traderService.offlineObservable.observe = sinon.stub();
   });
 
-  it('has ttl of 30 seconds', async () => {
+  it('calls observe with topTrader field', async () => {
+    traderService.observeTopTraders({ period: 'day', limit: 10 });
+    sinon.assert.calledWith(
+      traderService.offlineObservable.observe,
+      [{ key: 'topTraders', period: 'day', limit: 10 }],
+      sinon.match.any,
+    );
+  });
+});
 
+describe('fetch', () => {
+  test('topTrader field calls traderScoreService.getTopTraders', async () => {
+    await traderService.fetch({ key: 'topTraders', period: 'day', limit: 10 });
+    sinon.assert.calledWith(
+      traderService.traderScoreService.getTopTraders,
+      { period: 'day', limit: 10 },
+    );
+  });
+});
+
+describe('fieldKey', () => {
+  it('returns key property from object', () => {
+    expect(traderService.fieldKey({ key: 'topTraders' })).toEqual('topTraders');
+  });
+});
+
+describe('ttl', () => {
+  test('topTrader ttl is 15 seconds', () => {
+    expect(traderService.ttl({ key: 'topTraders' })).toEqual(15000);
   });
 });
