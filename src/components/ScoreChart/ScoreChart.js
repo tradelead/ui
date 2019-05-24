@@ -78,9 +78,9 @@ function useTraderScoreHistory({ trader, duration }) {
       setLoading(true);
       return trader.observe(
         [{ key: 'scores', duration }],
-        (data) => {
+        (data, newLoading) => {
           setScoreHistory(data.scores || []);
-          setLoading(false);
+          setLoading(newLoading);
         },
       );
     }

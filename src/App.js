@@ -92,28 +92,29 @@ function getMockTrader() {
     username: 'tradername123',
     observe(args, callback) {
       (async () => {
-        // callback(rsp, loading, error);
-        callback({}, true, null);
-        await sleep(200);
+        const DAY_SEC = 24 * 60 * 60 * 1000;
+        const scores = [
+          { time: Date.now() - DAY_SEC * 3, score: 100 },
+          { time: Date.now() - DAY_SEC * 2.5, score: 115 },
+          { time: Date.now() - DAY_SEC * 2.49, score: 110 },
+          { time: Date.now() - DAY_SEC * 2, score: 125 },
+          { time: Date.now() - DAY_SEC * 1.5, score: 105 },
+          { time: Date.now() - DAY_SEC * 1.1, score: 150 },
+          { time: Date.now() - DAY_SEC, score: 140 },
+        ];
 
         const rsp = {};
         const keys = args.map(a => (typeof a === 'string' ? a : a.key));
 
-        if (keys.includes('score')) {
-          rsp.score = 123;
+        if (keys.includes('scores')) {
+          rsp.scores = scores;
         }
 
-        if (keys.includes('scores')) {
-          const DAY_SEC = 24 * 60 * 60 * 1000;
-          rsp.scores = [
-            { time: Date.now() - DAY_SEC * 3, score: 100 },
-            { time: Date.now() - DAY_SEC * 2.5, score: 115 },
-            { time: Date.now() - DAY_SEC * 2.49, score: 110 },
-            { time: Date.now() - DAY_SEC * 2, score: 125 },
-            { time: Date.now() - DAY_SEC * 1.5, score: 105 },
-            { time: Date.now() - DAY_SEC * 1.1, score: 150 },
-            { time: Date.now() - DAY_SEC, score: 140 },
-          ];
+        callback({ scores }, true, null);
+        await sleep(200);
+
+        if (keys.includes('score')) {
+          rsp.score = 123;
         }
 
         if (keys.includes('rank')) {
