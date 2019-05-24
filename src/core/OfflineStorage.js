@@ -16,12 +16,10 @@ export default class OfflineStorage {
     return [data, refetchedDataProm];
   }
 
-  // eslint-disable-next-line class-methods-use-this
   async get(key) {
     return JSON.parse(localStorage.getItem(key)) || {};
   }
 
-  // eslint-disable-next-line class-methods-use-this
   async update(key, value) {
     localStorage.setItem(key, JSON.stringify({ data: value, time: Date.now() }));
   }

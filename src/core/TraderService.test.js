@@ -11,11 +11,9 @@ beforeEach(() => {
     traderScoreService: {
       getTopTraders: sinon.stub(),
     },
-    offlineStorage: {
-      fetch: sinon.stub(),
-    },
   });
 
+  traderService.offlineStorage = { fetch: sinon.stub() };
   traderService.offlineStorage.fetch.callsFake((key, ttl, fetch) => (async () => [
     null,
     (async () => fetch())(),

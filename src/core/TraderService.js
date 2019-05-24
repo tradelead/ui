@@ -1,7 +1,9 @@
+import OfflineStorage from './OfflineStorage';
+
 export default class TraderService {
-  constructor({ accountService, offlineStorage }) {
+  constructor({ accountService }) {
     this.accountService = accountService;
-    this.offlineStorage = offlineStorage;
+    this.offlineStorage = new OfflineStorage();
   }
 
   async getTrader(id) {
