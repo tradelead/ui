@@ -1,20 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import Spinner from 'react-bootstrap/Spinner';
 import { timeFormat } from 'd3-time-format';
-import TraderPropType from '../../propTypes/Trader';
 import './ScoreChart.css';
 import Filters from './Filters';
 import LabeledBadge from './LabeledBadge';
 import LineChart from './LineChart/LineChart';
 
-const ScoreChart = ({ trader, width, height }) => {
-  const [durationFilter, setDurationFilter] = useState(30);
-
-  const [scoreHistory, scoreHistoryLoading] = useTraderScoreHistory({
-    trader,
-    duration: durationFilter,
-  });
+const ScoreChart = ({
+  scoreHistory,
+  loading,
+  setDuration,
+  width,
+  height,
+}) => {
   const firstScore = (scoreHistory.length > 0) ? scoreHistory[0] : {};
   const lastScore = (scoreHistory.length > 0) ? scoreHistory[scoreHistory.length - 1] : {};
   const growthRatio = (lastScore.score / firstScore.score);
@@ -36,7 +35,7 @@ const ScoreChart = ({ trader, width, height }) => {
 
   return (
     <div className="score-chart">
-      {scoreHistoryLoading && (
+      {loading && (
         <Spinner size="sm" animation="border" role="status">
           <span className="sr-only">Loading...</span>
         </Spinner>
@@ -44,7 +43,7 @@ const ScoreChart = ({ trader, width, height }) => {
 
       <div className="chart-controls">
         <Filters
-          onSelect={setDurationFilter}
+          onSelect={setDuration}
           filters={[
             { label: 'Today', value: 1 },
             { label: 'Week', value: 7 },
@@ -69,28 +68,6 @@ const ScoreChart = ({ trader, width, height }) => {
   );
 };
 
-function useTraderScoreHistory({ trader, duration }) {
-  const [scoreHistory, setScoreHistory] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (trader.id) {
-      setLoading(true);
-      return trader.observe(
-        [{ key: 'scores', duration }],
-        (data, newLoading) => {
-          setScoreHistory(data.scores || []);
-          setLoading(newLoading);
-        },
-      );
-    }
-
-    return () => {};
-  }, [trader.id, duration]);
-
-  return [scoreHistory, loading];
-}
-
 function determineMarginTop({ width }) {
   if (width < 1200) {
     return 15;
@@ -100,7 +77,12 @@ function determineMarginTop({ width }) {
 }
 
 ScoreChart.propTypes = {
-  trader: TraderPropType.isRequired,
+  scoreHistory: PropTypes.arrayOf(PropTypes.shape({
+    time: PropTypes.number.isRequired,
+    score: PropTypes.number.isRequired,
+  })).isRequired,
+  loading: PropTypes.bool.isRequired,
+  setDuration: PropTypes.func.isRequired,
   height: PropTypes.number.isRequired,
   width: PropTypes.number.isRequired,
 };

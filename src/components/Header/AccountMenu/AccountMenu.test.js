@@ -18,6 +18,7 @@ let ctx;
 
 beforeEach(() => {
   ctx = {
+    closeMenu: () => {},
     auth: {
       login: sinon.stub(),
       register: sinon.stub(),
@@ -31,9 +32,13 @@ beforeEach(() => {
 });
 
 // eslint-disable-next-line react/prop-types
-function TestAccountMenu({ value }) {
+function TestAccountMenu({ value, ...obj }) {
   return (
-    <Router><AppContext.Provider value={value}><AccountMenu /></AppContext.Provider></Router>
+    <Router>
+      <AppContext.Provider value={value}>
+        <AccountMenu {...obj} />
+      </AppContext.Provider>
+    </Router>
   );
 }
 
@@ -74,40 +79,44 @@ describe('when not logged in', () => {
 });
 
 describe('when logged in', () => {
-  beforeEach(() => {
-    ctx.trader.id = 'trader123';
-  });
+  const props = {
+    user: {
+      id: 'trader123',
+      username: 'tradername',
+    },
+  };
 
   it('doesn\'t show login and sign up buttons', () => {
-    const wrapper = mount(<TestAccountMenu value={ctx} />);
+    const wrapper = mount(<TestAccountMenu value={ctx} {...props} />);
     expect(wrapper.find('button.login')).toHaveLength(0);
     expect(wrapper.find('button.signup')).toHaveLength(0);
   });
 
   it('shows login settings link with url', () => {
-    const wrapper = mount(<TestAccountMenu value={ctx} />);
+    const wrapper = mount(<TestAccountMenu value={ctx} {...props} />);
     expect(wrapper.find('.loginSettings'))
       .toHaveProp('href', 'http://example.com/loginSettings');
   });
 
   it('calls auth logout when logout button clicked', () => {
-    const wrapper = mount(<TestAccountMenu value={ctx} />);
+    const wrapper = mount(<TestAccountMenu value={ctx} {...props} />);
     wrapper.find('button.logout').simulate('click');
     sinon.assert.called(ctx.auth.logout);
   });
 
   describe('profile photo', () => {
     it('shows trader\'s profile photo', async () => {
-      const wrapper = await mountAsync(<TestAccountMenu value={ctx} />);
+      props.profilePhoto = 'test';
+      const wrapper = await mountAsync(<TestAccountMenu value={ctx} {...props} />);
 
-      expect(wrapper.find('MockTraderImg')).toHaveProp('trader', ctx.trader);
-      expect(wrapper.find('MockTraderImg')).toHaveProp('size', 'thumbnail');
+      expect(wrapper.find('MockTraderImg')).toHaveProp('src', props.profilePhoto);
+      expect(wrapper.find('MockTraderImg')).toHaveProp('alt', props.user.username);
     });
   });
 
   describe('toggle menu', () => {
     it('shows menu when toggle clicked', () => {
-      const wrapper = mount(<TestAccountMenu value={ctx} />);
+      const wrapper = mount(<TestAccountMenu value={ctx} {...props} />);
       wrapper.find('.toggle-account-menu').simulate('click');
       expect(wrapper.find('.account-menu-open')).toHaveLength(1);
     });
@@ -118,7 +127,7 @@ describe('when logged in', () => {
         listeners[event] = cb;
       });
 
-      const wrapper = mount(<div className="test-wrapper"><TestAccountMenu value={ctx} /></div>);
+      const wrapper = mount(<div className="test-wrapper"><TestAccountMenu value={ctx} {...props} /></div>);
       wrapper.find('.toggle-account-menu').simulate('click'); // open
       act(() => {
         listeners.click({ target: wrapper.getDOMNode() }); // then close
@@ -136,7 +145,7 @@ describe('when logged in', () => {
         listeners[event] = cb;
       });
 
-      const wrapper = mount(<div className="test-wrapper"><TestAccountMenu value={ctx} /></div>);
+      const wrapper = mount(<div className="test-wrapper"><TestAccountMenu value={ctx} {...props} /></div>);
       wrapper.find('.toggle-account-menu').simulate('click'); // open
       wrapper.find('.account-menu li').first().simulate('click');
 

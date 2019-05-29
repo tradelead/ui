@@ -2,14 +2,17 @@ import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import './Header.css';
 import { NavLink } from 'react-router-dom';
-import useTraderInfo from '../../hooks/useTraderInfo';
 import LabeledBadge from './LabeledBadge/LabeledBadge';
 import AccountMenu from './AccountMenu/AccountMenu';
 import AppContext from '../../AppContext';
 
-const Header = ({ closeMenu }) => {
-  const app = useContext(AppContext);
-  const [info] = useTraderInfo(app.trader, ['score', 'rank']);
+const Header = ({
+  user,
+  score,
+  rank,
+  profilePhoto,
+}) => {
+  const { closeMenu } = useContext(AppContext);
 
   return (
     <div className="header-inner">
@@ -22,20 +25,29 @@ const Header = ({ closeMenu }) => {
         <li><NavLink onClick={closeMenu} activeClassName="active" to="/leaders">Leaders</NavLink></li>
       </ul>
 
-      {(info.score) ? <LabeledBadge className="score" label="Score" value={info.score} /> : ''}
-      {(info.rank) ? <LabeledBadge className="rank" label="Rank" value={info.rank} /> : ''}
+      {(score) ? <LabeledBadge className="score" label="Score" value={score} /> : ''}
+      {(rank) ? <LabeledBadge className="rank" label="Rank" value={rank} /> : ''}
 
-      <AccountMenu closeMenu={closeMenu} />
+      <AccountMenu user={user} profilePhoto={profilePhoto} closeMenu={closeMenu} />
     </div>
   );
 };
 
 Header.propTypes = {
-  closeMenu: PropTypes.func,
+  user: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    username: PropTypes.string,
+  }),
+  score: PropTypes.number,
+  rank: PropTypes.number,
+  profilePhoto: PropTypes.string,
 };
 
 Header.defaultProps = {
-  closeMenu: () => {},
+  user: {},
+  score: null,
+  rank: null,
+  profilePhoto: '',
 };
 
 export default Header;

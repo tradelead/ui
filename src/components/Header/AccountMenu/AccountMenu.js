@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import AppContext from '../../../AppContext';
 import TraderImg from '../../TraderImg/TraderImg';
 
-const AccountMenu = ({ closeMenu }) => {
+const AccountMenu = ({ user, profilePhoto }) => {
   const app = useContext(AppContext);
   const {
     register,
@@ -13,13 +13,15 @@ const AccountMenu = ({ closeMenu }) => {
     settingsUrl,
   } = app.auth;
 
+  const { closeMenu } = app;
+
   const port = window.location.port ? `:${window.location.port}` : '';
   const accountUrl = `${window.location.protocol}//${window.location.host}${port}/account`;
 
   const [open, setOpen] = useState(false);
   const toggleOpen = () => setOpen(!open);
 
-  const loggedIn = app.trader.id != null;
+  const loggedIn = user.id != null;
 
   useOutsideClicksCloseMenu(setOpen);
 
@@ -41,7 +43,7 @@ const AccountMenu = ({ closeMenu }) => {
         onClick={toggleOpen}
       >
         <div className="profilePhoto">
-          <TraderImg trader={app.trader} size="thumbnail" />
+          <TraderImg src={profilePhoto} alt={user.username} />
         </div>
 
         <div className="down-arrow">
@@ -75,11 +77,15 @@ const AccountMenu = ({ closeMenu }) => {
 };
 
 AccountMenu.propTypes = {
-  closeMenu: PropTypes.func,
+  user: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  }),
+  profilePhoto: PropTypes.string,
 };
 
 AccountMenu.defaultProps = {
-  closeMenu: () => {},
+  user: {},
+  profilePhoto: '',
 };
 
 function useOutsideClicksCloseMenu(setOpen) {

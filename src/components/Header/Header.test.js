@@ -1,5 +1,4 @@
 import React from 'react';
-import { act } from 'react-dom/test-utils';
 import sinon from 'sinon';
 import { mount } from 'enzyme';
 import { BrowserRouter as Router } from 'react-router-dom';
@@ -13,7 +12,15 @@ jest.mock('../TraderImg/TraderImg', () => (
   }
 ));
 
+jest.mock('./AccountMenu/AccountMenu', () => (
+  // eslint-disable-next-line func-names
+  function MockAccountMenu() {
+    return <div />;
+  }
+));
+
 let ctx;
+const props = {};
 
 beforeEach(() => {
   ctx = {
@@ -22,95 +29,42 @@ beforeEach(() => {
       register: sinon.stub(),
       logout: sinon.stub(),
     },
-    trader: {
-      observe: sinon.stub(),
-    },
   };
 });
 
 
 // eslint-disable-next-line react/prop-types
-function TestHeader({ value }) {
+function TestHeader({ value, ...obj }) {
   return (
-    <Router><AppContext.Provider value={value}><Header /></AppContext.Provider></Router>
+    <Router><AppContext.Provider value={value}><Header {...obj} /></AppContext.Provider></Router>
   );
 }
 
-async function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-async function mountAsync(component) {
-  let el;
-
-  await act(async () => {
-    el = mount(component);
-  });
-
-  el.update();
-
-  return el;
-}
-
-it('renders without trader', () => {
-  ctx.trader = {};
+it('renders without logged in', () => {
   const el = mount(<TestHeader value={ctx} />);
   expect(el).toExist();
 });
 
-describe('when trader exists', () => {
-  let observer = null;
+it('shows score when exists', async () => {
+  props.score = 1200;
+  const el = mount(<TestHeader value={ctx} {...props} />);
+  expect(el.find('.score .value').text()).toEqual('1200');
+});
 
-  beforeEach(() => {
-    ctx.trader.id = 'trader123';
+it('shows rank when exists', async () => {
+  props.rank = 12;
+  const el = mount(<TestHeader value={ctx} {...props} />);
+  expect(el.find('.rank .value').text()).toEqual('12');
+});
 
-    ctx.trader.observe.callsFake((args, callback) => {
-      observer = callback;
-      return () => {};
-    });
-  });
+it('passes profile photo to account menu', async () => {
+  props.profilePhoto = 'test';
+  const el = mount(<TestHeader value={ctx} {...props} />);
+  expect(el.find('MockAccountMenu').prop('profilePhoto')).toEqual(props.profilePhoto);
+});
 
-  it('shows score when exists', async () => {
-    const el = await mountAsync(<TestHeader value={ctx} />);
-    await act(async () => {
-      observer({ score: 1200 });
-      await sleep(0);
-      el.update();
-    });
-    expect(el.find('.score .value').text()).toEqual('1200');
-  });
-
-  it('updates score when trader newScore emitted', async () => {
-    const el = await mountAsync(<TestHeader value={ctx} />);
-    await act(async () => {
-      observer({ score: 1200 });
-      await sleep(0);
-      observer({ score: 1212 });
-      await sleep(0);
-      el.update();
-    });
-    expect(el.find('.score .value').text()).toEqual('1212');
-  });
-
-  it('shows rank when exists', async () => {
-    const el = await mountAsync(<TestHeader value={ctx} />);
-    await act(async () => {
-      observer({ rank: 12 });
-      await sleep(0);
-      el.update();
-    });
-    expect(el.find('.rank .value').text()).toEqual('12');
-  });
-
-  it('updates rank when trader newRank emitted', async () => {
-    const el = await mountAsync(<TestHeader value={ctx} />);
-    await act(async () => {
-      observer({ rank: 12 });
-      await sleep(0);
-      observer({ rank: 24 });
-      await sleep(0);
-      el.update();
-    });
-    expect(el.find('.rank .value').text()).toEqual('24');
-  });
+it('passes user to account menu', async () => {
+  props.user = { test: 1 };
+  const el = mount(<TestHeader value={ctx} {...props} />);
+  expect(el.find('MockAccountMenu').prop('user')).toEqual(props.user);
 });

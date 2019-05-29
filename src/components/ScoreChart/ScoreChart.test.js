@@ -1,8 +1,9 @@
 import React from 'react';
-import { act } from 'react-dom/test-utils';
 import sinon from 'sinon';
 import { mount } from 'enzyme';
 import ScoreChart from './ScoreChart';
+import sleep from '../../utils/sleep';
+import asyncMountWrapper from '../../testUtils/asyncMountWrapper';
 
 jest.mock('./LineChart/LineChart', () => (
   // eslint-disable-next-line func-names
@@ -12,100 +13,68 @@ jest.mock('./LineChart/LineChart', () => (
 ));
 
 // eslint-disable-next-line react/prop-types
-function setup({ trader }) {
+function setup(req) {
   return {
-    component: <ScoreChart height={800} width={1920} trader={trader} />,
+    component: <ScoreChart {...req} />,
   };
 }
 
-const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-
 let req;
-let scoreHistoryListener;
 
 beforeEach(() => {
   req = {
-    trader: {
-      id: 'trader123',
-      observe: sinon.stub(),
-    },
+    height: 800,
+    width: 1920,
+    loading: false,
+    scoreHistory: [],
+    setDuration: sinon.stub(),
   };
-
-  scoreHistoryListener = null;
-  req.trader.observe.callsFake((_, listener) => {
-    scoreHistoryListener = listener;
-    return () => {};
-  });
 });
 
 describe('filters', () => {
-  it('fetches score history with duration of 30 by default', async () => {
-    const { component } = setup(req);
-    mount(component);
-
-    await sleep(0);
-
-    sinon.assert.calledWith(req.trader.observe, [{
-      key: 'scores',
-      duration: 30,
-    }], sinon.match.func);
-  });
-
   it('fetches score history with duration of 1 when "today" filter clicked', async () => {
     const { component } = setup(req);
     const el = mount(component);
-    req.trader.observe.reset();
+    req.setDuration.reset();
     el.find('.Today').simulate('click');
 
     await sleep(0);
 
-    sinon.assert.calledWith(req.trader.observe, [{
-      key: 'scores',
-      duration: 1,
-    }], sinon.match.func);
+    sinon.assert.calledWith(req.setDuration, 1);
   });
 
   it('fetches score history with duration of 1 when "week" filter clicked', async () => {
     const { component } = setup(req);
     const el = mount(component);
-    req.trader.observe.reset();
+    req.setDuration.reset();
     el.find('.Week').simulate('click');
 
     await sleep(0);
 
-    sinon.assert.calledWith(req.trader.observe, [{
-      key: 'scores',
-      duration: 7,
-    }], sinon.match.func);
+    sinon.assert.calledWith(req.setDuration, 7);
   });
 
   it('fetches score history with duration of 30 when "month" filter clicked', async () => {
     const { component } = setup(req);
     const el = mount(component);
     el.find('.Week').simulate('click');
-    req.trader.observe.reset();
+    req.setDuration.reset();
     el.find('.Month').simulate('click');
 
     await sleep(0);
 
-    sinon.assert.calledWith(req.trader.observe, [{
-      key: 'scores',
-      duration: 30,
-    }], sinon.match.func);
+    sinon.assert.calledWith(req.setDuration, 30);
   });
 
   it('fetches score history with duration of 0 when "all" filter clicked', async () => {
     const { component } = setup(req);
     const el = mount(component);
-    req.trader.observe.reset();
+    req.setDuration.reset();
     el.find('.All').simulate('click');
 
     await sleep(0);
 
-    sinon.assert.calledWith(req.trader.observe, [{
-      key: 'scores',
-      duration: 0,
-    }], sinon.match.func);
+    sinon.assert.calledWith(req.setDuration, 0);
   });
 });
 
@@ -113,23 +82,14 @@ describe('chart data', () => {
   let wrapper;
 
   beforeEach(async () => {
+    req.scoreHistory = [
+      { time: 100, score: 1 },
+      { time: 200, score: 2 },
+      { time: 300, score: 3 },
+    ];
+
     const { component } = setup(req);
-    wrapper = mount(component);
-
-    await sleep(0);
-
-    act(() => {
-      scoreHistoryListener({
-        scores: [
-          { time: 100, score: 1 },
-          { time: 200, score: 2 },
-          { time: 300, score: 3 },
-        ],
-      });
-    });
-
-    wrapper.update();
-    await sleep(0);
+    wrapper = await asyncMountWrapper(component);
   });
 
   it('sets growth as percentage different between first and last scores', async () => {
@@ -143,18 +103,14 @@ describe('chart data', () => {
   });
 
   it('sets growth as percentage different between first and last scores when 2 days', async () => {
-    act(() => {
-      scoreHistoryListener({
-        scores: [
-          { time: 100, score: 1 },
-          { time: 200, score: 2 },
-          { time: (2 * 24 * 60 * 60 * 1000) + 100, score: 3 },
-        ],
-      });
-    });
+    req.scoreHistory = [
+      { time: 100, score: 1 },
+      { time: 200, score: 2 },
+      { time: (2 * 24 * 60 * 60 * 1000) + 100, score: 3 },
+    ];
 
-    await sleep(0);
-    wrapper.update();
+    const { component } = setup(req);
+    wrapper = await asyncMountWrapper(component);
 
     expect(wrapper.find('.daily-avg .value')).toExist();
     expect(wrapper.find('.daily-avg .value').text()).toEqual('100.0%');
@@ -186,4 +142,12 @@ describe('chart data', () => {
     expect(wrapper.find('MockLineChart')).toExist();
     expect(wrapper.find('MockLineChart').prop('data')).toEqual(expectedChartData);
   });
+});
+
+it('shows loading icon', async () => {
+  req.loading = true;
+  const { component } = setup(req);
+  const wrapper = await asyncMountWrapper(component);
+
+  expect(wrapper.find('Spinner')).toExist();
 });
