@@ -25,6 +25,7 @@
     "lodash.get": "^4.4.2",
     "lodash.isequal": "^4.5.0",
     "lodash.throttle": "^4.1.1",
+    "lodash.union": "^4.6.0",
     "mobx": "^5.9.4",
     "mobx-utils": "^5.4.0",
     "moize": "^5.4.4",

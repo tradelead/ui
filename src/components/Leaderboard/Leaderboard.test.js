@@ -13,14 +13,12 @@ jest.mock('../ColumnsToTabs/ColumnsToTabs', () => ({
   ColumnTab: ({ children, label }) => <div className={`mockColumnTab ${label}`}>{children}</div>,
 }));
 
-jest.mock('../LeaderDisplay/LeaderDisplay', () => ({
-  __esModule: true,
-  default: ({ traders, loading }) => (
-    <div className="mockLeaderDisplay">
-      {JSON.stringify({ traders, loading })}
-    </div>
-  ),
-}));
+jest.mock('../LeaderDisplay/LeaderDisplay', () => (
+  // eslint-disable-next-line func-names
+  function MockLeaderDisplay() {
+    return <div />;
+  }
+));
 
 const ctx = {
   traderService: {
@@ -28,84 +26,93 @@ const ctx = {
   },
 };
 
-function setup() {
+function setup({ props }) {
   return (
-    <AppContext.Provider value={ctx}><Leaderboard /></AppContext.Provider>
+    <AppContext.Provider value={ctx}><Leaderboard {...props} /></AppContext.Provider>
   );
 }
 
-it('subscribes to 15 all time top traders', () => {
-  const component = setup();
-  mount(component);
-  sinon.assert.calledWith(
-    ctx.traderService.observeTopTraders,
-    { limit: 15, period: undefined },
-    sinon.match.any,
-  );
+let props = {};
+
+beforeEach(() => {
+  props = {
+    loading: false,
+    allTimeTopTraders: [{
+      id: 'test',
+      username: 'testname',
+      profilePhoto: { url: 'http://test.com/image.jpeg' },
+      rank: 1,
+      score: 1,
+    }],
+    weeklyTopTraders: [{
+      id: 'test',
+      username: 'testname',
+      profilePhoto: { url: 'http://test.com/image.jpeg' },
+      rank: 2,
+      score: 2,
+    }],
+    dailyTopTraders: [{
+      id: 'test',
+      username: 'testname',
+      profilePhoto: { url: 'http://test.com/image.jpeg' },
+      rank: 3,
+      score: 3,
+    }],
+  };
 });
 
-it('subscribes to 15 weekly top traders', () => {
-  const component = setup();
-  mount(component);
-  sinon.assert.calledWith(
-    ctx.traderService.observeTopTraders,
-    { period: 'week', limit: 15 },
-    sinon.match.any,
-  );
-});
+it('marks LeaderDisplays as loading', () => {
+  props.loading = true;
 
-it('subscribes to 15 daily top traders', () => {
-  const component = setup();
-  mount(component);
-  sinon.assert.calledWith(
-    ctx.traderService.observeTopTraders,
-    { period: 'day', limit: 15 },
-    sinon.match.any,
-  );
-});
-
-it('marks LeaderDisplay as loading until callback called', () => {
-  let listener = null;
-  ctx.traderService.observeTopTraders.callsFake((args, callback) => {
-    // save all time callback
-    if (!args.period) {
-      listener = callback;
-    }
-    return () => {};
-  });
-
-  const component = setup();
+  const component = setup({ props });
   const wrapper = mount(component);
 
-  let props;
-  props = JSON.parse(wrapper.find('.mockColumnTab.All.Time .mockLeaderDisplay').text());
-  expect(props.loading).toEqual(true);
-
-  act(() => { listener([]); wrapper.update(); });
-
-  props = JSON.parse(wrapper.find('.mockColumnTab.All.Time .mockLeaderDisplay').text());
-  expect(props.loading).toEqual(false);
+  expect(wrapper.find('.mockColumnTab.All.Time MockLeaderDisplay'))
+    .toHaveProp('loading', true);
+  expect(wrapper.find('.mockColumnTab.Weekly MockLeaderDisplay'))
+    .toHaveProp('loading', true);
+  expect(wrapper.find('.mockColumnTab.Today MockLeaderDisplay'))
+    .toHaveProp('loading', true);
 });
 
-it('passes callback response to LeaderDisplay trader prop', () => {
-  let listener = null;
-  ctx.traderService.observeTopTraders.callsFake((args, callback) => {
-    // save all time callback
-    if (!args.period) {
-      listener = callback;
-    }
-    return () => {};
-  });
-
-  const component = setup();
+it('passes all time traders to LeaderDisplay', () => {
+  const component = setup({ props });
   const wrapper = mount(component);
 
-  let props;
-  props = JSON.parse(wrapper.find('.mockColumnTab.All.Time .mockLeaderDisplay').text());
-  expect(props.traders).toEqual([]);
+  expect(wrapper.find('.mockColumnTab.All.Time MockLeaderDisplay'))
+    .toHaveProp('traders', [{
+      id: 'test',
+      username: 'testname',
+      profilePhoto: { url: 'http://test.com/image.jpeg' },
+      rank: 1,
+      score: 1,
+    }]);
+});
 
-  act(() => { listener({ test: 1 }); wrapper.update(); });
+it('passes weekly traders to LeaderDisplay', () => {
+  const component = setup({ props });
+  const wrapper = mount(component);
 
-  props = JSON.parse(wrapper.find('.mockColumnTab.All.Time .mockLeaderDisplay').text());
-  expect(props.traders).toEqual({ test: 1 });
+  expect(wrapper.find('.mockColumnTab.Weekly MockLeaderDisplay'))
+    .toHaveProp('traders', [{
+      id: 'test',
+      username: 'testname',
+      profilePhoto: { url: 'http://test.com/image.jpeg' },
+      rank: 2,
+      score: 2,
+    }]);
+});
+
+it('passes daily traders to LeaderDisplay', () => {
+  const component = setup({ props });
+  const wrapper = mount(component);
+
+  expect(wrapper.find('.mockColumnTab.Today MockLeaderDisplay'))
+    .toHaveProp('traders', [{
+      id: 'test',
+      username: 'testname',
+      profilePhoto: { url: 'http://test.com/image.jpeg' },
+      rank: 3,
+      score: 3,
+    }]);
 });

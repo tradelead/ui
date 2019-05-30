@@ -9,14 +9,6 @@ import asyncUpdateWrapper from '../../testUtils/asyncUpdateWrapper';
 import AppContext from '../../AppContext';
 import { GET_SCORE_HISTORY, ScoreChartContainer } from './ScoreChartContainer';
 
-const { now } = Date;
-const time = Date.now();
-Date.now = jest.fn(() => time);
-
-afterAll(() => {
-  Date.now = now;
-});
-
 jest.mock('./ScoreChart', () => (
   // eslint-disable-next-line func-names
   function MockScoreChart() {

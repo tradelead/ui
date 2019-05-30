@@ -1,47 +1,40 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import './Leaderboard.css';
 import { ColumnsToTabs, ColumnTab } from '../ColumnsToTabs/ColumnsToTabs';
 import LeaderDisplay from '../LeaderDisplay/LeaderDisplay';
-import AppContext from '../../AppContext';
+import TopTradersPropType from '../../propTypes/TopTraders';
 
-const Leaderboard = () => {
-  const { traderService } = useContext(AppContext);
-  const [allTimeTopTraders, allTimeLoading] = useTopTraders({ traderService, limit: 15 });
-  const [weeklyTopTraders, weeklyLoading] = useTopTraders({ traderService, period: 'week', limit: 15 });
-  const [dailyTopTraders, dailyLoading] = useTopTraders({ traderService, period: 'day', limit: 15 });
-
+const Leaderboard = ({
+  loading,
+  allTimeTopTraders,
+  weeklyTopTraders,
+  dailyTopTraders,
+}) => {
   return (
     <div className="leaderboard">
       <ColumnsToTabs tabBreakpoint={991}>
         <ColumnTab label="All Time">
-          <LeaderDisplay traders={allTimeTopTraders} loading={allTimeLoading} />
+          <LeaderDisplay traders={allTimeTopTraders} loading={loading} />
         </ColumnTab>
 
         <ColumnTab label="Weekly">
-          <LeaderDisplay traders={weeklyTopTraders} loading={weeklyLoading} />
+          <LeaderDisplay traders={weeklyTopTraders} loading={loading} />
         </ColumnTab>
 
         <ColumnTab label="Today">
-          <LeaderDisplay traders={dailyTopTraders} loading={dailyLoading} />
+          <LeaderDisplay traders={dailyTopTraders} loading={loading} />
         </ColumnTab>
       </ColumnsToTabs>
     </div>
   );
 };
 
-function useTopTraders({ traderService, period, limit }) {
-  const [topTraders, setTopTraders] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => (traderService.observeTopTraders(
-    { period, limit },
-    (newTopTraders) => {
-      setTopTraders(newTopTraders);
-      setLoading(false);
-    },
-  )), [traderService, period, limit]);
-
-  return [topTraders, loading];
-}
+Leaderboard.propTypes = {
+  loading: PropTypes.bool.isRequired,
+  allTimeTopTraders: TopTradersPropType.isRequired,
+  weeklyTopTraders: TopTradersPropType.isRequired,
+  dailyTopTraders: TopTradersPropType.isRequired,
+};
 
 export default Leaderboard;

@@ -1,7 +1,7 @@
 import React from 'react';
 import Container from 'react-bootstrap/Container';
 import './LeaderboardScreen.css';
-import Leaderboard from '../../components/Leaderboard/Leaderboard';
+import { LeaderboardContainer as Leaderboard } from '../../components/Leaderboard/LeaderboardContainer';
 
 const LeaderboardScreen = () => (
   <div className="leaderboard-screen">

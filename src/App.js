@@ -11,6 +11,7 @@ import Header from './components/Header/Header';
 import AppContext from './AppContext';
 import { GET_SCORE_RANK_PROFILEPHOTO, HeaderContainer } from './components/Header/HeaderContainer';
 import { GET_SCORE_HISTORY } from './components/ScoreChart/ScoreChartContainer';
+import { GET_TOP_TRADERS, GET_USERS } from './components/Leaderboard/LeaderboardContainer';
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -108,6 +109,12 @@ function getGraphQLMocks() {
     { time: Date.now() - DAY_SEC, score: 140 },
   ];
 
+  const mockTopTraders = new Array(15).fill({
+    id: 'trader123',
+    rank: 123,
+    scores: [{ score: 1234 }],
+  });
+
   return [
     {
       request: {
@@ -147,6 +154,36 @@ function getGraphQLMocks() {
           getTrader: {
             scores,
           },
+        },
+      },
+    },
+    {
+      request: {
+        query: GET_TOP_TRADERS,
+        variables: {
+          limit: 15,
+        },
+      },
+      result: {
+        data: {
+          allTimeTopTraders: mockTopTraders,
+          weeklyTopTraders: mockTopTraders,
+          dailyTopTraders: mockTopTraders,
+        },
+      },
+    },
+    {
+      request: {
+        query: GET_USERS,
+        variables: {
+          ids: ['trader123'],
+        },
+      },
+      result: {
+        data: {
+          getUsers: [
+            { id: 'trader123', username: 'tradername123', profilePhoto: { url: '' } },
+          ],
         },
       },
     },
