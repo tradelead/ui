@@ -2,7 +2,7 @@ import React from 'react';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import ExchangeKeys from './ExchangeKeys/ExchangeKeys';
-import ProfileSettings from './ProfileSettings/ProfileSettings';
+import { ProfileSettingsContainer as ProfileSettings } from './ProfileSettings/ProfileSettingsContainer';
 
 const AccountSettings = () => (
   <div className="account-settings">

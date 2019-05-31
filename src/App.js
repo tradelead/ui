@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
 import { push as Menu } from 'react-burger-menu';
+import { ApolloProvider } from 'react-apollo';
 import { MockedProvider } from 'react-apollo/test-utils';
 import sleep from './utils/sleep';
 import DashboardScreen from './screens/Dashboard/DashboardScreen';
@@ -12,6 +13,7 @@ import AppContext from './AppContext';
 import { GET_SCORE_RANK_PROFILEPHOTO, HeaderContainer } from './components/Header/HeaderContainer';
 import { GET_SCORE_HISTORY } from './components/ScoreChart/ScoreChartContainer';
 import { GET_TOP_TRADERS, GET_USERS } from './components/Leaderboard/LeaderboardContainer';
+import { GET_PROFILE, UPDATE_PROFILE } from './components/AccountSettings/ProfileSettings/ProfileSettingsContainer';
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -66,32 +68,36 @@ function App() {
     },
   };
 
+  const mockClient = {};
+
   return (
     <AppContext.Provider value={ctx}>
       <Router>
-        <MockedProvider mocks={getGraphQLMocks()} addTypename={false}>
-          <div id="App" className="App">
-            <Menu
-              right
-              pageWrapId="page-wrap"
-              outerContainerId="App"
-              isOpen={menuOpen}
-              onStateChange={state => setMenuOpen(state.isOpen)}
-            >
-              <Header />
-            </Menu>
+        <ApolloProvider client={mockClient}>
+          <MockedProvider mocks={getGraphQLMocks()} addTypename={false}>
+            <div id="App" className="App">
+              <Menu
+                right
+                pageWrapId="page-wrap"
+                outerContainerId="App"
+                isOpen={menuOpen}
+                onStateChange={state => setMenuOpen(state.isOpen)}
+              >
+                <Header />
+              </Menu>
 
-            <div id="page-wrap">
-              <div className="header">
-                <HeaderContainer />
+              <div id="page-wrap">
+                <div className="header">
+                  <HeaderContainer />
+                </div>
+                <Route path="/" exact component={DashboardScreen} />
+                <Route path="/leaders" component={LeaderboardScreen} />
+                <Route path="/trader/:username" component={TraderProfileScreen} />
+                <Route path="/account" component={AccountScreen} />
               </div>
-              <Route path="/" exact component={DashboardScreen} />
-              <Route path="/leaders" component={LeaderboardScreen} />
-              <Route path="/trader/:username" component={TraderProfileScreen} />
-              <Route path="/account" component={AccountScreen} />
             </div>
-          </div>
-        </MockedProvider>
+          </MockedProvider>
+        </ApolloProvider>
       </Router>
     </AppContext.Provider>
   );
@@ -183,6 +189,61 @@ function getGraphQLMocks() {
         data: {
           getUsers: [
             { id: 'trader123', username: 'tradername123', profilePhoto: { url: '' } },
+          ],
+        },
+      },
+    },
+    {
+      request: {
+        query: GET_PROFILE,
+        variables: {
+          id: 'trader123',
+        },
+      },
+      result: {
+        data: {
+          getUsers: [
+            {
+              username: 'tradername123',
+              website: 'http://test.com',
+              bio: 'testing bio',
+            },
+          ],
+        },
+      },
+    },
+    {
+      request: {
+        query: UPDATE_PROFILE,
+        variables: {
+          id: 'trader123',
+          input: {
+            website: 'http://newurl.com',
+            bio: 'testing bio',
+          },
+        },
+      },
+      result: {
+        data: {
+          updateUser: true,
+        },
+      },
+    },
+    {
+      request: {
+        query: GET_PROFILE,
+        variables: {
+          id: 'trader123',
+        },
+      },
+      result: {
+        data: {
+          getUsers: [
+            {
+              username: 'tradername123',
+              website: 'http://newurl.com',
+              bio: 'testing bio',
+            },
           ],
         },
       },

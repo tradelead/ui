@@ -15,112 +15,103 @@ jest.mock('../../TraderImg/TraderImg', () => (
   }
 ));
 
-const ctx = {
-  trader: {
-    observe: sinon.stub(),
+let ctx = {};
+let props = {};
+
+beforeEach(() => {
+  ctx = {
+    user: {
+      id: 'trader123',
+      username: 'tradername',
+    },
+  };
+
+  props = {
+    profile: {
+      data: {
+        username: 'tradernameTest',
+        website: 'http://test.com',
+        bio: 'testing bio',
+        profilePhoto: {
+          url: 'http://test.com/image.jpg',
+        },
+      },
+      loading: false,
+      errors: undefined,
+    },
     update: sinon.stub(),
-    upload: sinon.stub(),
-  },
-};
+    updateRes: {
+      loading: false,
+      errors: undefined,
+    },
+    uploadProfilePhoto: sinon.stub(),
+  };
+});
 
 function setup() {
   return (
-    <AppContext.Provider value={ctx}><ProfileSettings /></AppContext.Provider>
+    <AppContext.Provider value={ctx}><ProfileSettings {...props} /></AppContext.Provider>
   );
 }
 
-describe('show current profile info', () => {
+describe('show profile info', () => {
   let wrapper;
-  let observer;
 
-  beforeAll(async () => {
-    ctx.trader.id = 'test';
-    ctx.trader.observe.callsFake((args, newObserver) => { observer = newObserver; });
-
+  beforeEach(async () => {
     const component = setup();
     wrapper = await asyncMountWrapper(component);
   });
 
-  it('calls observe with bio', () => {
-    sinon.assert.calledWith(ctx.trader.observe, ['bio'], sinon.match.any);
-  });
-
   it('shows bio', async () => {
-    act(() => observer({ bio: 'my bio' }));
-    await asyncUpdateWrapper(wrapper);
-    expect(wrapper.find('.bio textarea').text()).toEqual('my bio');
+    expect(wrapper.find('.bio textarea').text())
+      .toEqual('testing bio');
   });
 
-  it('calls TraderImg with trader and size thumbnail', () => {
+  it('shows website', async () => {
+    expect(wrapper.find('.website input').prop('value'))
+      .toEqual('http://test.com');
+  });
+
+  it('calls TraderImg with profilePhoto src and username as alt', () => {
     const traderImgWrap = wrapper.find('MockTraderImg');
-    expect(traderImgWrap).toHaveProp('trader', ctx.trader);
-    expect(traderImgWrap).toHaveProp('size', 'thumbnail');
-    expect(traderImgWrap).toHaveProp('className', 'profilePhotoImg');
+    expect(traderImgWrap).toHaveProp('src', 'http://test.com/image.jpg');
+    expect(traderImgWrap).toHaveProp('alt', 'tradernameTest');
   });
 });
 
 describe('save profile info', () => {
   it('shows loader while saving', async () => {
-    ctx.trader.update.returns(sleep(100));
+    props.updateRes.loading = true;
 
     const component = setup();
     const wrapper = await asyncMountWrapper(component);
-
-    wrapper.find('.bio textarea')
-      .simulate('change', { target: { value: 'new bio' } });
-
-    wrapper.find('Form').simulate('submit');
-
-    await act(async () => {
-      wrapper.find('Form').simulate('submit');
-      await sleep(0);
-      wrapper.update();
-      await sleep(0);
-    });
 
     expect(wrapper.find('.save').find('Button').find('Spinner')).toExist();
   });
 
   it('hides loader after saving', async () => {
-    ctx.trader.update.returns(sleep(0));
+    props.updateRes.loading = false;
 
     const component = setup();
     const wrapper = await asyncMountWrapper(component);
-
-    wrapper.find('.bio textarea')
-      .simulate('change', { target: { value: 'new bio' } });
-
-    await act(async () => {
-      wrapper.find('Form').simulate('submit');
-      await sleep(0);
-      wrapper.update();
-      await sleep(0);
-    });
 
     expect(wrapper.find('.save').find('Button').find('Spinner')).toHaveLength(0);
   });
 
   it('shows error if request rejects', async () => {
-    const error = 'this is my error';
-    ctx.trader.update.rejects(new Error(error));
+    props.updateRes.errors = [
+      { message: 'test error 1' },
+      { message: 'test error 2' },
+    ];
 
     const component = setup();
     const wrapper = await asyncMountWrapper(component);
 
-    wrapper.find('.bio textarea')
-      .simulate('change', { target: { value: 'new bio' } });
-
-    await act(async () => {
-      wrapper.find('Form').simulate('submit');
-      await sleep(0);
-      wrapper.update();
-      await sleep(0);
-    });
-
-    expect(wrapper.find('div.save-error').text()).toContain(error);
+    expect(wrapper.find('div.save-error').at(0).text()).toContain('test error 1');
+    expect(wrapper.find('div.save-error').at(1).text()).toContain('test error 2');
   });
 
-  describe('saves bio', () => {
+  describe('saves profile', () => {
     test('when form submitted', async () => {
       const component = setup();
       const wrapper = await asyncMountWrapper(component);
@@ -128,14 +119,19 @@ describe('save profile info', () => {
       wrapper.find('.bio textarea')
         .simulate('change', { target: { value: 'new bio' } });
 
+      wrapper.find('.website input')
+        .simulate('change', { target: { value: 'http://newurl.com' } });
+
       await act(async () => {
         wrapper.find('Form').simulate('submit');
         await sleep(0);
         wrapper.update();
-        await sleep(0);
       });
 
-      sinon.assert.calledWith(ctx.trader.update, { bio: 'new bio' });
+      sinon.assert.calledWith(props.update, {
+        bio: 'new bio',
+        website: 'http://newurl.com',
+      });
     });
 
     test('when button clicked', async () => {
@@ -145,14 +141,19 @@ describe('save profile info', () => {
       wrapper.find('.bio textarea')
         .simulate('change', { target: { value: 'new bio' } });
 
+      wrapper.find('.website input')
+        .simulate('change', { target: { value: 'http://newurl.com' } });
+
       await act(async () => {
         wrapper.find('.save').find('Button').simulate('click');
         await sleep(0);
         wrapper.update();
-        await sleep(0);
       });
 
-      sinon.assert.calledWith(ctx.trader.update, { bio: 'new bio' });
+      sinon.assert.calledWith(props.update, {
+        bio: 'new bio',
+        website: 'http://newurl.com',
+      });
     });
   });
 });
@@ -160,7 +161,7 @@ describe('save profile info', () => {
 describe('upload profile photo', () => {
   const simulateUpload = async (err) => {
     if (!err) {
-      ctx.trader.upload.callsFake(async (data, progressFn) => {
+      props.uploadProfilePhoto.callsFake(async ({ progressFn }) => {
         for (let i = 0; i < 50; i += 1) {
           await sleep(1);
           progressFn(i * 2);
@@ -169,7 +170,7 @@ describe('upload profile photo', () => {
         return true;
       });
     } else {
-      ctx.trader.upload.rejects(err);
+      props.uploadProfilePhoto.rejects(err);
     }
 
     const size = 1024 * 1024 * 2;
@@ -195,10 +196,10 @@ describe('upload profile photo', () => {
 
   it('calls upload with file', async () => {
     const { file } = await simulateUpload();
-    sinon.assert.calledWith(ctx.trader.upload, {
-      key: 'profilePhoto',
+    sinon.assert.calledWith(props.uploadProfilePhoto, {
       file,
-    }, sinon.match.any);
+      progressFn: sinon.match.any,
+    });
   });
 
   it('hides file upload while uploading', async () => {

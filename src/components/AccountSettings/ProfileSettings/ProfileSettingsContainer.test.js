@@ -54,11 +54,9 @@ beforeEach(() => {
         data: {
           getUsers: [
             {
+              username: 'tradername',
               website: 'http://test.com',
               bio: 'This is my bio',
-              profilePhoto: {
-                url: 'http://test.com/image.jpg',
-              },
             },
           ],
         },
@@ -78,6 +76,25 @@ beforeEach(() => {
       result: {
         data: {
           updateUser: true,
+        },
+      },
+    },
+    {
+      request: {
+        query: GET_PROFILE,
+        variables: {
+          id: 'trader123',
+        },
+      },
+      result: {
+        data: {
+          getUsers: [
+            {
+              username: 'tradername',
+              website: 'http://newurl.com',
+              bio: 'testing bio',
+            },
+          ],
         },
       },
     },
@@ -129,7 +146,7 @@ describe('ProfileSettings updateUser mutation', () => {
         bio: 'testing bio',
       });
     });
-    await sleep(50);
+    await sleep(0);
     await asyncUpdateWrapper(wrapper);
 
     expect(wrapper.find('MockProfileSettings').prop('updateRes').errors).toEqual([
@@ -137,7 +154,7 @@ describe('ProfileSettings updateUser mutation', () => {
     ]);
   });
 
-  it('mutation updates bio', async () => {
+  it('updates bio after mutation', async () => {
     const { component } = setup({ ctx, graphqlMocks, ...props });
     const wrapper = await asyncMountWrapper(component);
 
@@ -148,38 +165,16 @@ describe('ProfileSettings updateUser mutation', () => {
         website: 'http://newurl.com',
         bio: 'testing bio',
       });
-
-      graphqlMocks[0] = {
-        request: {
-          query: GET_PROFILE,
-          variables: {
-            id: 'trader123',
-          },
-        },
-        result: {
-          data: {
-            getUsers: [
-              {
-                website: 'http://newurl.com',
-                bio: 'testing bio',
-                profilePhoto: {
-                  url: 'http://test.com/image.jpg',
-                },
-              },
-            ],
-          },
-        },
-      };
     });
 
-    await sleep(50);
+    await sleep(0);
     await asyncUpdateWrapper(wrapper);
 
     expect(wrapper.find('MockProfileSettings').prop('profile').data.bio)
       .toEqual('testing bio');
   });
 
-  it('mutation updates website', async () => {
+  it('updates website after mutation', async () => {
     const { component } = setup({ ctx, graphqlMocks, ...props });
     const wrapper = await asyncMountWrapper(component);
 
@@ -190,40 +185,36 @@ describe('ProfileSettings updateUser mutation', () => {
         website: 'http://newurl.com',
         bio: 'testing bio',
       });
-
-      graphqlMocks[0] = {
-        request: {
-          query: GET_PROFILE,
-          variables: {
-            id: 'trader123',
-          },
-        },
-        result: {
-          data: {
-            getUsers: [
-              {
-                website: 'http://newurl.com',
-                bio: 'testing bio',
-                profilePhoto: {
-                  url: 'http://test.com/image.jpg',
-                },
-              },
-            ],
-          },
-        },
-      };
     });
 
-    await sleep(50);
+    await sleep(0);
     await asyncUpdateWrapper(wrapper);
 
     expect(wrapper.find('MockProfileSettings').prop('profile').data.website)
       .toEqual('http://newurl.com');
   });
+
+  it('shows as loading during mutation', async () => {
+    const { component } = setup({ ctx, graphqlMocks, ...props });
+    const wrapper = await asyncMountWrapper(component);
+
+    const update = wrapper.find('MockProfileSettings').prop('update');
+
+    act(() => {
+      update({
+        website: 'http://newurl.com',
+        bio: 'testing bio',
+      });
+    });
+    wrapper.update();
+
+    expect(wrapper.find('MockProfileSettings').prop('updateRes').loading)
+      .toEqual(true);
+  });
 });
 
 describe('ProfileSettings uploadProfilePhoto', () => {
-
+  // write integration tests
 });
 
 it('calls ProfileSettings with loading when query loading', async () => {

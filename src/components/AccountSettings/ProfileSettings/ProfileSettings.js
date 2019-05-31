@@ -1,36 +1,33 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Alert from 'react-bootstrap/Alert';
 import Spinner from 'react-bootstrap/Spinner';
-import AppContext from '../../../AppContext';
 import TraderImg from '../../TraderImg/TraderImg';
-import useTraderInfo from '../../../hooks/useTraderInfo';
 import './ProfileSettings.css';
 
-const ProfileSettings = () => {
-  const app = useContext(AppContext);
-
-  // eslint-disable-next-line no-unused-vars
-  const [info, loading, error] = useTraderInfo(app.trader, ['bio']);
+const ProfileSettings = ({
+  profile,
+  update,
+  updateRes,
+  uploadProfilePhoto,
+}) => {
+  const info = profile.data;
+  const { errors } = profile;
 
   const [bio, setBio] = useState('');
   useEffect(() => {
     setBio(info.bio);
   }, [info.bio]);
 
-  const [
-    updateUser,
-    updatingLoading,
-    updateError,
-  ] = useUpdateUser(app.trader, { bio });
+  const [website, setWebsite] = useState('');
+  useEffect(() => {
+    setWebsite(info.website);
+  }, [info.website]);
 
-  // const [
-  //   uploadProfilePhoto,
-  //   profilePhotoProgress,
-  //   profilePhotoError,
-  // ] = useUploadFile(app.trader, 'profilePhoto');
+  const updateUser = () => update({ bio, website });
 
   return (
     <div className="profileSettings">
@@ -39,7 +36,7 @@ const ProfileSettings = () => {
           <h2>Profile Settings</h2>
           <Button className="save" variant="primary" onClick={updateUser}>
             Save
-            {updatingLoading && (
+            {updateRes.loading && (
               <>
                 <Spinner
                   className="delete-loading"
@@ -55,10 +52,10 @@ const ProfileSettings = () => {
           </Button>
         </Card.Header>
         <Card.Body>
-          {error && (<Alert variant="danger">{error.message}</Alert>)}
-          {updateError && (
-            <Alert dismissible className="save-error" variant="danger">{updateError}</Alert>
-          )}
+          {errors && errors.map(error => (<Alert key={error.message} variant="danger">{error.message}</Alert>))}
+          {updateRes.errors && updateRes.errors.map(error => (
+            <Alert key={error.message} dismissible className="save-error" variant="danger">{error.message}</Alert>
+          ))}
 
           <Form onSubmit={updateUser}>
             <Form.Group className="bio" controlId="formBio">
@@ -69,9 +66,17 @@ const ProfileSettings = () => {
               <Form.Control
                 as="textarea"
                 name="bio"
-                required
                 value={bio}
                 onChange={e => setBio(e.target.value)}
+              />
+            </Form.Group>
+
+            <Form.Group className="website" controlId="formWebsite">
+              <Form.Label>Edit Website</Form.Label>
+              <Form.Control
+                name="website"
+                value={website}
+                onChange={e => setWebsite(e.target.value)}
               />
             </Form.Group>
           </Form>
@@ -79,10 +84,13 @@ const ProfileSettings = () => {
           <Form.Group className="profilePhoto">
             <Form.Label>Edit Profile Photo</Form.Label>
             <div className="profilePhoto-inner">
-              <TraderImg trader={app.trader} size="thumbnail" className="profilePhotoImg" />
+              <TraderImg
+                src={info.profilePhoto && info.profilePhoto.url}
+                alt={info.username}
+                className="profilePhotoImg"
+              />
               <Upload
-                trader={app.trader}
-                uploadKey="profilePhoto"
+                upload={uploadProfilePhoto}
                 render={(upload, progress, uploadError) => (
                   <div className="file-upload-wrap">
                     {progress === false && (
@@ -129,32 +137,36 @@ const ProfileSettings = () => {
   );
 };
 
-function useUpdateUser(trader, data) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+ProfileSettings.propTypes = {
+  profile: PropTypes.shape({
+    data: PropTypes.shape({
+      username: PropTypes.string,
+      bio: PropTypes.string,
+      website: PropTypes.string,
+      profilePhoto: PropTypes.shape({
+        url: PropTypes.string,
+      }),
+    }).isRequired,
+    loading: PropTypes.bool.isRequired,
+    errors: PropTypes.arrayOf(PropTypes.shape({
+      message: PropTypes.string,
+    })),
+  }).isRequired,
+  update: PropTypes.func.isRequired,
+  updateRes: PropTypes.shape({
+    loading: PropTypes.bool.isRequired,
+    errors: PropTypes.arrayOf(PropTypes.shape({
+      message: PropTypes.string,
+    })),
+  }).isRequired,
+  uploadProfilePhoto: PropTypes.func.isRequired,
+};
 
-  const updateUser = async () => {
-    if (!loading) {
-      setLoading(true);
-      try {
-        await trader.update(data);
-      } catch (e) {
-        setError(e.message);
-      } finally {
-        setLoading(false);
-      }
-    }
-  };
-
-  return [updateUser, loading, error];
-}
-
-
-function Upload({ trader, uploadKey, render }) {
+function Upload({ upload, render }) {
   const [progress, setProgress] = useState(false);
   const [error, setError] = useState('');
 
-  const upload = async (e) => {
+  const uploadWrap = async (e) => {
     if (progress !== false) {
       return;
     }
@@ -163,12 +175,8 @@ function Upload({ trader, uploadKey, render }) {
 
     const file = e.target.files[0];
 
-    const progressHandler = (n) => {
-      setProgress(n);
-    };
-
     try {
-      await trader.upload({ key: uploadKey, file }, progressHandler);
+      await upload({ file, progressFn: n => setProgress(n) });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -176,7 +184,7 @@ function Upload({ trader, uploadKey, render }) {
     }
   };
 
-  return render(upload, progress, error);
+  return render(uploadWrap, progress, error);
 }
 
 export default ProfileSettings;
