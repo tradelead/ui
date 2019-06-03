@@ -54,17 +54,27 @@ const ExchangeKeys = ({
 
   useEffect(() => {
     // update key data
-    otherProps.exchangeKeys.map(key => updateExchangeKeyState(key.exchangeID, key));
+    const newExchangeKeys = otherProps.exchangeKeys || [];
+    newExchangeKeys.map(key => updateExchangeKeyState(key.exchangeID, key));
 
-    // find and remove deleted keys
-    const exchangeKeysMap = otherProps.exchangeKeys.reduce((acc, key) => {
+    // remove deleted keys
+    const newExchangeKeysMap = newExchangeKeys.reduce((acc, key) => {
       acc[key.exchangeID] = key;
       return acc;
     }, {});
 
-    const newKeys = exchangeKeys.filter(key => exchangeKeysMap[key.exchangeID]);
+    const updatedKeyState = exchangeKeys.filter(key => newExchangeKeysMap[key.exchangeID]);
 
-    setExchangeKeys(newKeys);
+    // add new keys
+    const currExchangeKeysMap = exchangeKeys.reduce((acc, key) => {
+      acc[key.exchangeID] = key;
+      return acc;
+    }, {});
+
+    const newKeys = newExchangeKeys.filter(key => !currExchangeKeysMap[key.exchangeID]);
+    updatedKeyState.push(...newKeys);
+
+    setExchangeKeys(updatedKeyState);
   }, [JSON.stringify(otherProps.exchangeKeys)]);
 
   const deleteExchangeKey = (key) => {
@@ -75,7 +85,7 @@ const ExchangeKeys = ({
         await deleteKey({ exchangeID: key.exchangeID });
       } catch (e) {
         updateExchangeKeyState(key.exchangeID, {
-          deletingError: e.message,
+          deletingError: e,
           deleting: false,
         });
       }
@@ -130,10 +140,12 @@ const ExchangeKeys = ({
                   )}
                 </button>
 
-                {key.deletingError && (
+                {key.deletingError && key.deletingError.errors.length > 0 && (
                   <Alert dismissible className="error" variant="danger">
-                    Error Deleting:
-                    {key.deletingError}
+                    <Alert.Heading>Error Deleting Key</Alert.Heading>
+                    {key.deletingError.errors.map(error => (
+                      <p key={error.message}>{error.message}</p>
+                    ))}
                   </Alert>
                 )}
               </div>
@@ -170,7 +182,7 @@ const ExchangeKeys = ({
                 required
                 onChange={(e) => { setExchangeID(e.target.value); }}
               >
-                {Object.keys(exchanges).map(id => (
+                {Object.keys(exchanges || {}).map(id => (
                   <option key={id} value={id}>{exchanges[id]}</option>
                 ))}
               </Form.Control>

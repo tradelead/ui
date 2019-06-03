@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
 import { push as Menu } from 'react-burger-menu';
 import { ApolloProvider } from 'react-apollo';
+import { ApolloProvider as ApolloProviderHooks } from 'react-apollo-hooks';
 import { MockedProvider } from 'react-apollo/test-utils';
+import createMockClient from './testUtils/createMockClient';
 import sleep from './utils/sleep';
 import DashboardScreen from './screens/Dashboard/DashboardScreen';
 import LeaderboardScreen from './screens/Leaderboard/LeaderboardScreen';
@@ -14,6 +16,7 @@ import { GET_SCORE_RANK_PROFILEPHOTO, HeaderContainer } from './components/Heade
 import { GET_SCORE_HISTORY } from './components/ScoreChart/ScoreChartContainer';
 import { GET_TOP_TRADERS, GET_USERS } from './components/Leaderboard/LeaderboardContainer';
 import { GET_PROFILE, UPDATE_PROFILE } from './components/AccountSettings/ProfileSettings/ProfileSettingsContainer';
+import { GET_EXCHANGE_KEYS_AND_EXCHANGES } from './components/AccountSettings/ExchangeKeys/ExchangeKeysContainer';
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -68,13 +71,13 @@ function App() {
     },
   };
 
-  const mockClient = {};
+  const mockClient = createMockClient(getGraphQLMocks());
 
   return (
     <AppContext.Provider value={ctx}>
       <Router>
         <ApolloProvider client={mockClient}>
-          <MockedProvider mocks={getGraphQLMocks()} addTypename={false}>
+          <ApolloProviderHooks client={mockClient}>
             <div id="App" className="App">
               <Menu
                 right
@@ -96,7 +99,7 @@ function App() {
                 <Route path="/account" component={AccountScreen} />
               </div>
             </div>
-          </MockedProvider>
+          </ApolloProviderHooks>
         </ApolloProvider>
       </Router>
     </AppContext.Provider>
@@ -106,19 +109,20 @@ function App() {
 function getGraphQLMocks() {
   const DAY_SEC = 24 * 60 * 60 * 1000;
   const scores = [
-    { time: Date.now() - DAY_SEC * 3, score: 100 },
-    { time: Date.now() - DAY_SEC * 2.5, score: 115 },
-    { time: Date.now() - DAY_SEC * 2.49, score: 110 },
-    { time: Date.now() - DAY_SEC * 2, score: 125 },
-    { time: Date.now() - DAY_SEC * 1.5, score: 105 },
-    { time: Date.now() - DAY_SEC * 1.1, score: 150 },
-    { time: Date.now() - DAY_SEC, score: 140 },
+    { __typename: 'Score', time: Date.now() - DAY_SEC * 3, score: 100 },
+    { __typename: 'Score', time: Date.now() - DAY_SEC * 2.5, score: 115 },
+    { __typename: 'Score', time: Date.now() - DAY_SEC * 2.49, score: 110 },
+    { __typename: 'Score', time: Date.now() - DAY_SEC * 2, score: 125 },
+    { __typename: 'Score', time: Date.now() - DAY_SEC * 1.5, score: 105 },
+    { __typename: 'Score', time: Date.now() - DAY_SEC * 1.1, score: 150 },
+    { __typename: 'Score', time: Date.now() - DAY_SEC, score: 140 },
   ];
 
   const mockTopTraders = new Array(15).fill({
+    __typename: 'Trader',
     id: 'trader123',
     rank: 123,
-    scores: [{ score: 1234 }],
+    scores: [{ __typename: 'Score', score: 1234 }],
   });
 
   return [
@@ -132,13 +136,17 @@ function getGraphQLMocks() {
       result: {
         data: {
           getUsers: [{
+            __typename: 'User',
             profilePhoto: {
+              __typename: 'Image',
               url: '',
             },
           }],
           getTrader: {
+            __typename: 'Trader',
             rank: 12,
             scores: [{
+              __typename: 'Score',
               score: 123,
             }],
           },
@@ -158,6 +166,7 @@ function getGraphQLMocks() {
       result: {
         data: {
           getTrader: {
+            __typename: 'Trader',
             scores,
           },
         },
@@ -188,7 +197,12 @@ function getGraphQLMocks() {
       result: {
         data: {
           getUsers: [
-            { id: 'trader123', username: 'tradername123', profilePhoto: { url: '' } },
+            {
+              __typename: 'User',
+              id: 'trader123',
+              username: 'tradername123',
+              profilePhoto: { url: '' },
+            },
           ],
         },
       },
@@ -204,6 +218,7 @@ function getGraphQLMocks() {
         data: {
           getUsers: [
             {
+              __typename: 'User',
               username: 'tradername123',
               website: 'http://test.com',
               bio: 'testing bio',
@@ -240,10 +255,42 @@ function getGraphQLMocks() {
         data: {
           getUsers: [
             {
+              __typename: 'User',
               username: 'tradername123',
               website: 'http://newurl.com',
               bio: 'testing bio',
             },
+          ],
+        },
+      },
+    },
+    {
+      request: {
+        query: GET_EXCHANGE_KEYS_AND_EXCHANGES,
+        variables: {
+          id: 'trader123',
+        },
+      },
+      result: {
+        data: {
+          exchangeKeys: [
+            {
+              __typename: 'ExchangeKey',
+              exchangeID: 'binance',
+              tokenLast4: 'aEwq',
+              secretLast4: 'PqnB',
+            },
+            {
+              __typename: 'ExchangeKey',
+              exchangeID: 'bittrex',
+              tokenLast4: '24aq',
+              secretLast4: '4elH',
+            },
+          ],
+          exchanges: [
+            { __typename: 'Exchange', exchangeID: 'binance', exchangeLabel: 'Binance' },
+            { __typename: 'Exchange', exchangeID: 'bittrex', exchangeLabel: 'Bittrex' },
+            { __typename: 'Exchange', exchangeID: 'coinbase', exchangeLabel: 'Coinbase' },
           ],
         },
       },

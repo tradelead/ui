@@ -1,7 +1,7 @@
 import React from 'react';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import ExchangeKeys from './ExchangeKeys/ExchangeKeys';
+import { ExchangeKeysContainer as ExchangeKeys } from './ExchangeKeys/ExchangeKeysContainer';
 import { ProfileSettingsContainer as ProfileSettings } from './ProfileSettings/ProfileSettingsContainer';
 
 const AccountSettings = () => (

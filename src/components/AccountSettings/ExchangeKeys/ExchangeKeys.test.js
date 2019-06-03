@@ -207,6 +207,26 @@ it('shows current keys', async () => {
   });
 });
 
+it('shows current keys after update', async () => {
+  const wrapper = mount(<ExchangeKeys {...props} />);
+  props.exchangeKeys[0].tokenLast4 = 'test';
+  wrapper.setProps({ ...props });
+  await asyncUpdateWrapper(wrapper);
+
+  props.exchangeKeys.forEach((key) => {
+    assertKeyDisplayed(wrapper, key);
+  });
+});
+
+it('shows current keys after key removed', async () => {
+  const wrapper = mount(<ExchangeKeys {...props} />);
+  delete props.exchangeKeys[0];
+  wrapper.setProps({ ...props });
+  await asyncUpdateWrapper(wrapper);
+
+  expect(wrapper.find('.exchange-key')).toHaveLength(1);
+});
+
 it('shows fetch errors', async () => {
   props.errors = [
     { message: 'Test error 1' },
@@ -223,7 +243,6 @@ describe('delete key', () => {
     const component = setup();
     const wrapper = await asyncMountWrapper(component);
 
-    console.log(wrapper.find('.exchange-keys').debug());
     await act(async () => wrapper.find('.exchange-key .delete').first().simulate('click'));
 
     return wrapper;
@@ -249,20 +268,6 @@ describe('delete key', () => {
     });
 
     expect(wrapper.find('.exchange-key .delete').first().find('.delete-loading')).toExist();
-  });
-
-  it('marks not loading after response', async () => {
-    props.deleteKey.returns(sleep(100));
-
-    const wrapper = await mountAndClickDeleteOnFirstKey();
-
-    await act(async () => {
-      await sleep(100);
-      wrapper.update();
-      await sleep(0);
-    });
-
-    expect(wrapper.find('.exchange-key .delete').first().find('.delete-loading')).toHaveLength(0);
   });
 
   it('displays error if request fails', async () => {
