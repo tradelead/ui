@@ -33,6 +33,7 @@
     "prop-types": "latest",
     "react": "^16.9.0-alpha.0",
     "react-apollo": "^2.5.6",
+    "react-apollo-hooks": "^0.4.5",
     "react-bootstrap": "^1.0.0-beta.8",
     "react-burger-menu": "^2.6.10",
     "react-dom": "^16.9.0-alpha.0",
@@ -63,6 +64,7 @@
     ]
   },
   "devDependencies": {
+    "apollo-link-mock": "^1.0.1",
     "babel-eslint": "^10.0.1",
     "enzyme": "^3.9.0",
     "enzyme-adapter-react-16": "^1.13.0",

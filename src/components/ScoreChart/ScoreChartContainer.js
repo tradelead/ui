@@ -6,10 +6,10 @@ import get from 'lodash.get';
 import ScoreChart from './ScoreChart';
 
 export const GET_SCORE_HISTORY = gql`
-  query getScoreHistory($id: ID, $groupBy: String, $startTime: Long, $limit: Int) {
+  query getScoreHistory($id: ID, $groupBy: String, $duration: Long, $limit: Int) {
     getTrader(id: $id) {
       scores(input: {
-        startTime: $startTime
+        duration: $duration
         groupBy: $groupBy
         limit: $limit
       }) {

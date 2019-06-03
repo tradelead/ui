@@ -8,32 +8,49 @@ import Alert from 'react-bootstrap/Alert';
 import Spinner from 'react-bootstrap/Spinner';
 import asyncMountWrapper from '../../../testUtils/asyncMountWrapper';
 import asyncUpdateWrapper from '../../../testUtils/asyncUpdateWrapper';
+import sleep from '../../../utils/sleep';
 import AppContext from '../../../AppContext';
 import ExchangeKeys from './ExchangeKeys';
 
-const sleep = async ms => new Promise(resolve => setTimeout(resolve, ms));
+let ctx = {};
+let props = {};
 
-const ctx = {
-  async getExchanges() {
-    return {
+beforeEach(() => {
+  ctx = {
+    user: {
+      id: 'trader123',
+    },
+  };
+
+  props = {
+    exchanges: {
       binance: 'Binance',
       bittrex: 'Bittrex',
-    };
-  },
-  trader: {
-    id: 'test',
-    observe: sinon.stub(),
-    addExchangeKey: sinon.stub(),
-    deleteExchangeKey: sinon.stub(),
-  },
-};
-
-let observer;
-ctx.trader.observe.callsFake((args, newObserver) => { observer = newObserver; });
+    },
+    exchangeKeys: [
+      {
+        exchangeID: 'binance',
+        exchangeLabel: 'Binance',
+        tokenLast4: 'aEwq',
+        secretLast4: 'PqnB',
+      },
+      {
+        exchangeID: 'bittrex',
+        exchangeLabel: 'Bittrex',
+        tokenLast4: '24aq',
+        secretLast4: '4elH',
+      },
+    ],
+    loading: false,
+    errors: undefined,
+    addKey: sinon.stub(),
+    deleteKey: sinon.stub(),
+  };
+});
 
 function setup() {
   return (
-    <AppContext.Provider value={ctx}><ExchangeKeys /></AppContext.Provider>
+    <AppContext.Provider value={ctx}><ExchangeKeys {...props} /></AppContext.Provider>
   );
 }
 
@@ -50,14 +67,13 @@ describe('adding key', () => {
     const wrapper = await asyncMountWrapper(component);
     wrapper.find({ className: 'add-key' }).find(Button).simulate('click');
 
-    const exchanges = await ctx.getExchanges();
-    Object.keys(exchanges).forEach((exchangeID) => {
+    Object.keys(props.exchanges).forEach((exchangeID) => {
       const optionWrapper = wrapper
         .find({ controlId: 'formExchangeID' })
         .find({ value: exchangeID });
 
       expect(optionWrapper).toExist();
-      expect(optionWrapper.text()).toEqual(exchanges[exchangeID]);
+      expect(optionWrapper.text()).toEqual(props.exchanges[exchangeID]);
     });
   });
 
@@ -71,17 +87,9 @@ describe('adding key', () => {
     expect(wrapper.find(Modal)).toHaveProp('show', false);
   });
 
-  it('calls add exchange key when modal form submitted', async () => {
+  it('calls add key when modal form submitted', async () => {
     const component = setup();
-    const wrapper = mount(component);
-
-    const newKey = {
-      exchangeID: 'binance',
-      exchangeLabel: 'Binance',
-      tokenLast4: 'aEwq',
-      secretLast4: 'PqnB',
-    };
-    ctx.trader.addExchangeKey.resolves(newKey);
+    const wrapper = await asyncMountWrapper(component);
 
     const data = {
       exchangeID: 'binance',
@@ -90,21 +98,18 @@ describe('adding key', () => {
     };
 
     await submitAddKeyForm(wrapper, data);
+    await sleep(50);
+    await asyncUpdateWrapper(wrapper);
 
-    sinon.assert.calledWith(ctx.trader.addExchangeKey, data);
+    sinon.assert.calledWith(props.addKey, data);
   });
 
   it('shows loader while awaiting add key', async () => {
     const component = setup();
     const wrapper = mount(component);
-    ctx.trader.addExchangeKey.callsFake(async () => {
+
+    props.addKey.callsFake(async () => {
       await sleep(100);
-      return {
-        exchangeID: 'binance',
-        exchangeLabel: 'Binance',
-        tokenLast4: 'aEwq',
-        secretLast4: 'PqnB',
-      };
     });
 
     const data = {
@@ -121,14 +126,8 @@ describe('adding key', () => {
   it('removes loader after key added', async () => {
     const component = setup();
     const wrapper = mount(component);
-    ctx.trader.addExchangeKey.callsFake(async () => {
+    props.addKey.callsFake(async () => {
       await sleep(100);
-      return {
-        exchangeID: 'binance',
-        exchangeLabel: 'Binance',
-        tokenLast4: 'aEwq',
-        secretLast4: 'PqnB',
-      };
     });
 
     const data = {
@@ -151,14 +150,8 @@ describe('adding key', () => {
   it('closes modal after key added', async () => {
     const component = setup();
     const wrapper = mount(component);
-    ctx.trader.addExchangeKey.callsFake(async () => {
+    props.addKey.callsFake(async () => {
       await sleep(100);
-      return {
-        exchangeID: 'binance',
-        exchangeLabel: 'Binance',
-        tokenLast4: 'aEwq',
-        secretLast4: 'PqnB',
-      };
     });
 
     const data = {
@@ -179,8 +172,12 @@ describe('adding key', () => {
   });
 
   it('shows error when adding key fails', async () => {
-    const error = 'This is my error';
-    ctx.trader.addExchangeKey.rejects(new Error(error));
+    const error = new Error('This is my error');
+    error.errors = [
+      { message: 'Test error 1' },
+      { message: 'Test error 2' },
+    ];
+    props.addKey.rejects(error);
 
     const component = setup();
     const wrapper = mount(component);
@@ -193,83 +190,56 @@ describe('adding key', () => {
 
     await submitAddKeyForm(wrapper, data);
 
-    expect(wrapper.find(Modal).find(Alert).find('p').text()).toEqual(error);
+    expect(wrapper.find(Modal).find(Alert).find('p').at(0))
+      .toHaveText('Test error 1');
+
+    expect(wrapper.find(Modal).find(Alert).find('p').at(1))
+      .toHaveText('Test error 2');
   });
 });
 
 it('shows current keys', async () => {
-  const expectedKeys = [
-    {
-      exchangeID: 'binance',
-      exchangeLabel: 'Binance',
-      tokenLast4: 'aEwq',
-      secretLast4: 'PqnB',
-    },
-    {
-      exchangeID: 'bittrex',
-      exchangeLabel: 'Bittrex',
-      tokenLast4: '24aq',
-      secretLast4: '4elH',
-    },
-  ];
-
   const component = setup();
   const wrapper = await asyncMountWrapper(component);
-  act(() => observer({ exchangeKeys: expectedKeys }));
-  await asyncUpdateWrapper(wrapper);
 
-  expectedKeys.forEach((key) => {
+  props.exchangeKeys.forEach((key) => {
     assertKeyDisplayed(wrapper, key);
   });
 });
 
-it('shows error when fails to get current keys', async () => {
+it('shows fetch errors', async () => {
+  props.errors = [
+    { message: 'Test error 1' },
+  ];
+
   const component = setup();
   const wrapper = await asyncMountWrapper(component);
-  act(() => observer(null, null, new Error('blah blah blah')));
-  await asyncUpdateWrapper(wrapper);
 
   expect(wrapper.find('.exchange-keys .error')).toExist();
 });
 
 describe('delete key', () => {
-  const expectedKeys = [
-    {
-      exchangeID: 'binance',
-      exchangeLabel: 'Binance',
-      tokenLast4: 'aEwq',
-      secretLast4: 'PqnB',
-    },
-    {
-      exchangeID: 'bittrex',
-      exchangeLabel: 'Bittrex',
-      tokenLast4: '24aq',
-      secretLast4: '4elH',
-    },
-  ];
-
   const mountAndClickDeleteOnFirstKey = async () => {
     const component = setup();
     const wrapper = await asyncMountWrapper(component);
-    act(() => observer({ exchangeKeys: expectedKeys }));
-    await asyncUpdateWrapper(wrapper);
 
+    console.log(wrapper.find('.exchange-keys').debug());
     await act(async () => wrapper.find('.exchange-key .delete').first().simulate('click'));
 
     return wrapper;
   };
 
-  it('calls deleteExchangeKey', async () => {
+  it('calls deleteKey', async () => {
     await mountAndClickDeleteOnFirstKey();
 
     sinon.assert.calledWith(
-      ctx.trader.deleteExchangeKey,
-      { exchangeID: expectedKeys[0].exchangeID },
+      props.deleteKey,
+      { exchangeID: props.exchangeKeys[0].exchangeID },
     );
   });
 
   it('marks loading while await response', async () => {
-    ctx.trader.deleteExchangeKey.returns(sleep(100));
+    props.deleteKey.returns(sleep(100));
 
     const wrapper = await mountAndClickDeleteOnFirstKey();
 
@@ -282,18 +252,7 @@ describe('delete key', () => {
   });
 
   it('marks not loading after response', async () => {
-    ctx.trader.deleteExchangeKey.callsFake(async () => {
-      await sleep(100);
-      // since deleted, update observer without that key
-      act(() => observer({
-        exchangeKeys: [{
-          exchangeID: 'bittrex',
-          exchangeLabel: 'Bittrex',
-          tokenLast4: '24aq',
-          secretLast4: '4elH',
-        }],
-      }));
-    });
+    props.deleteKey.returns(sleep(100));
 
     const wrapper = await mountAndClickDeleteOnFirstKey();
 
@@ -307,8 +266,12 @@ describe('delete key', () => {
   });
 
   it('displays error if request fails', async () => {
-    const error = 'this is my error';
-    ctx.trader.deleteExchangeKey.rejects(new Error(error));
+    const error = new Error('This is my error');
+    error.errors = [
+      { message: 'Test error 1' },
+      { message: 'Test error 2' },
+    ];
+    props.deleteKey.rejects(error);
 
     const wrapper = await mountAndClickDeleteOnFirstKey();
 
@@ -317,7 +280,11 @@ describe('delete key', () => {
       await sleep(0);
     });
 
-    expect(wrapper.find('.exchange-key').first().find('div.error').text()).toContain(error);
+    expect(wrapper.find('.exchange-key').first().find('.error p').at(0))
+      .toHaveText('Test error 1');
+
+    expect(wrapper.find('.exchange-key').first().find('.error p').at(1))
+      .toHaveText('Test error 2');
   });
 });
 
@@ -335,9 +302,8 @@ async function submitAddKeyForm(wrapper, data) {
 
   await act(async () => {
     wrapper.find(Modal).find('form').simulate('submit');
-    await sleep(0);
-    wrapper.update();
-    await sleep(0);
+    await asyncUpdateWrapper(wrapper);
+    await asyncUpdateWrapper(wrapper);
   });
 }
 

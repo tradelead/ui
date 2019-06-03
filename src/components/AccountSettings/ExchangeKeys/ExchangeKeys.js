@@ -6,46 +6,42 @@ import Alert from 'react-bootstrap/Alert';
 import Spinner from 'react-bootstrap/Spinner';
 import Card from 'react-bootstrap/Card';
 import { FaTrashAlt } from 'react-icons/fa';
-import useTraderInfo from '../../../hooks/useTraderInfo';
 import AppContext from '../../../AppContext';
 import './ExchangeKeys.css';
 
-const ExchangeKeys = () => {
+const ExchangeKeys = ({
+  exchanges,
+  loading,
+  errors,
+  addKey,
+  deleteKey,
+  ...otherProps
+}) => {
   const app = useContext(AppContext);
 
-  const exchanges = useExchanges(app);
-
   const [showModal, setShowModal] = useState(false);
-  const [addKeyError, setAddKeyError] = useState('');
-  const [addingKey, setAddingKey] = useState(false);
-  const [exchangeID, setExchangeID] = useState('binance');
+  const defaultExchangeID = exchanges && exchanges.length > 0 && exchanges[0].exchangeID;
+  const [exchangeID, setExchangeID] = useState(defaultExchangeID);
   const [token, setToken] = useState('');
   const [secret, setSecret] = useState('');
 
   // eslint-disable-next-line no-unused-vars
-  const [info, loading, error] = useTraderInfo(app.trader, ['exchangeKeys']);
+  const [dispatchAddKey, addedKey, addingKey, addKeyError] = useAsyncAction(addKey);
 
-  const [exchangeKeys, setExchangeKeys] = useState([]);
-  useEffect(() => {
-    setExchangeKeys(info.exchangeKeys);
-  }, [info]);
 
   const addExchangeKey = async (e) => {
     e.preventDefault();
 
-    if (addingKey) {
-      return;
-    }
-    setAddingKey(true);
     try {
-      await app.trader.addExchangeKey({ exchangeID, token, secret });
+      await dispatchAddKey({ exchangeID, token, secret });
       setShowModal(false);
     } catch (err) {
-      setAddKeyError(err.message);
+      console.error(err);
+      // do nothing
     }
-
-    setAddingKey(false);
   };
+
+  const [exchangeKeys, setExchangeKeys] = useState([]);
 
   const updateExchangeKeyState = (curExchangeID, updateData) => {
     setExchangeKeys((keys) => {
@@ -56,14 +52,29 @@ const ExchangeKeys = () => {
     });
   };
 
-  const deleteExchangeKey = (deleteKey) => {
+  useEffect(() => {
+    // update key data
+    otherProps.exchangeKeys.map(key => updateExchangeKeyState(key.exchangeID, key));
+
+    // find and remove deleted keys
+    const exchangeKeysMap = otherProps.exchangeKeys.reduce((acc, key) => {
+      acc[key.exchangeID] = key;
+      return acc;
+    }, {});
+
+    const newKeys = exchangeKeys.filter(key => exchangeKeysMap[key.exchangeID]);
+
+    setExchangeKeys(newKeys);
+  }, [JSON.stringify(otherProps.exchangeKeys)]);
+
+  const deleteExchangeKey = (key) => {
     (async () => {
-      updateExchangeKeyState(deleteKey.exchangeID, { deleting: true });
+      updateExchangeKeyState(key.exchangeID, { deleting: true });
 
       try {
-        await app.trader.deleteExchangeKey({ exchangeID: deleteKey.exchangeID });
+        await deleteKey({ exchangeID: key.exchangeID });
       } catch (e) {
-        updateExchangeKeyState(deleteKey.exchangeID, {
+        updateExchangeKeyState(key.exchangeID, {
           deletingError: e.message,
           deleting: false,
         });
@@ -82,7 +93,7 @@ const ExchangeKeys = () => {
         </Card.Header>
         <Card.Body>
           <div className="exchange-keys">
-            {error && (
+            {errors && (
               <Alert className="error" variant="danger">Error Fetching Keys</Alert>
             )}
 
@@ -187,10 +198,12 @@ const ExchangeKeys = () => {
 
             <p>Remember! Use read only exchange keys.</p>
 
-            {addKeyError.length > 0 ? (
+            {addKeyError && addKeyError.errors.length > 0 ? (
               <Alert dismissible variant="danger">
                 <Alert.Heading>Error Adding Key</Alert.Heading>
-                <p>{addKeyError}</p>
+                {addKeyError.errors.map(error => (
+                  <p key={error.message}>{error.message}</p>
+                ))}
               </Alert>
             ) : ''}
 
@@ -216,16 +229,28 @@ const ExchangeKeys = () => {
   );
 };
 
-function useExchanges(app) {
-  const [exchanges, setExchanges] = useState({});
-  useEffect(() => {
-    (async () => {
-      const newExchanges = await app.getExchanges();
-      setExchanges(newExchanges);
-    })();
-  }, []);
+function useAsyncAction(fn, throwError) {
+  const [data, setData] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  return exchanges;
+  const action = async (...args) => {
+    setLoading(true);
+    try {
+      const res = await fn(...args);
+      setData(res);
+      return res;
+    } catch (e) {
+      setError(e);
+      if (throwError) { throw e; }
+    } finally {
+      setLoading(false);
+    }
+
+    return null;
+  };
+
+  return [action, data, loading, error];
 }
 
 export default ExchangeKeys;
