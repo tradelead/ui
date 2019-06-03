@@ -1,7 +1,8 @@
 import React from 'react';
 import { mount } from 'enzyme';
-import { MockedProvider } from 'react-apollo/test-utils';
+import { ApolloProvider } from 'react-apollo-hooks';
 import { BrowserRouter as Router } from 'react-router-dom';
+import createMockClient from '../../testUtils/createMockClient';
 import sleep from '../../utils/sleep';
 import AppContext from '../../AppContext';
 import { GET_SCORE_RANK_PROFILEPHOTO, HeaderContainer } from './HeaderContainer';
@@ -14,13 +15,15 @@ jest.mock('./Header', () => (
 ));
 
 function setup({ ctx, graphqlMocks, ...obj }) {
+  const client = createMockClient(graphqlMocks);
+
   return {
     component: (
       <Router>
         <AppContext.Provider value={ctx}>
-          <MockedProvider mocks={graphqlMocks} addTypename={false}>
+          <ApolloProvider client={client} addTypename={false}>
             <HeaderContainer {...obj} />
-          </MockedProvider>
+          </ApolloProvider>
         </AppContext.Provider>
       </Router>
     ),
@@ -49,13 +52,17 @@ beforeEach(() => {
       result: {
         data: {
           getUsers: [{
+            __typename: 'User',
             profilePhoto: {
+              __typename: 'Image',
               url: 'http://test.com',
             },
           }],
           getTrader: {
+            __typename: 'Trader',
             rank: 12,
             scores: [{
+              __typename: 'Score',
               score: 123,
             }],
           },
@@ -89,7 +96,6 @@ it('calls header with query data', async () => {
   await sleep(0);
   wrapper.update();
 
-  console.log(wrapper.debug(), wrapper.find('MockHeader').props());
   expect(wrapper.find('MockHeader').prop('rank'))
     .toEqual(12);
   expect(wrapper.find('MockHeader').prop('profilePhoto'))
