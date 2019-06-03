@@ -1,9 +1,8 @@
 import React from 'react';
-import sinon from 'sinon';
-import { act } from 'react-dom/test-utils';
-import { mount } from 'enzyme';
-import AppContext from '../../AppContext';
-import TraderProfileScreen from './TraderProfileScreen';
+import { ApolloProvider } from 'react-apollo-hooks';
+import asyncMountWrapper from '../../testUtils/asyncMountWrapper';
+import createMockClient from '../../testUtils/createMockClient';
+import { GET_TRADER_FROM_USERNAME, TraderProfileScreen } from './TraderProfileScreen';
 
 jest.mock('../../components/TraderProfile/TraderProfile', () => (
   // eslint-disable-next-line func-names
@@ -12,57 +11,64 @@ jest.mock('../../components/TraderProfile/TraderProfile', () => (
   }
 ));
 
-const ctx = {
-  traderService: {
-    getTrader: sinon.stub(),
-  },
-};
-
-ctx.traderService.getTrader.resolves({});
-
-async function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+function setup(args, mocks) {
+  const mockClient = createMockClient(mocks);
+  return <ApolloProvider client={mockClient}><TraderProfileScreen {...args} /></ApolloProvider>;
 }
 
-function setup(args) {
-  return <AppContext.Provider value={ctx}><TraderProfileScreen {...args} /></AppContext.Provider>;
-}
+let props = {};
+let graphQLMocks = [];
+beforeEach(() => {
+  props = { match: { params: { username: 'test' } } };
 
-async function asyncMount(component) {
-  let wrapper = null;
-  await act(async () => {
-    wrapper = mount(component);
-    await sleep(0);
-    wrapper.update();
-    await sleep(0);
-  });
-
-  return wrapper;
-}
-
-it('calls traderService.getTrader with param username', async () => {
-  const component = setup({ match: { params: { username: 'test' } } });
-  await asyncMount(component);
-
-  ctx.traderService.getTrader.calledWith('test');
+  graphQLMocks = [
+    {
+      request: {
+        query: GET_TRADER_FROM_USERNAME,
+        variables: {
+          username: 'test',
+        },
+      },
+      result: {
+        data: {
+          trader: {
+            __typename: 'User',
+            id: 'trader123',
+          },
+        },
+      },
+    },
+  ];
 });
 
-it('calls traderProfile with user from traderService.getTrader', async () => {
-  const obj = { id: 'test' };
-  ctx.traderService.getTrader.resolves(obj);
+it('calls TraderProfile with userID from query', async () => {
+  const component = setup(props, graphQLMocks);
+  const wrapper = await asyncMountWrapper(component);
 
-  const component = setup({ match: { params: { username: 'test' } } });
-  const wrapper = await asyncMount(component);
-
-  expect(wrapper.find('MockTraderProfile').prop('trader')).toEqual(obj);
+  expect(wrapper.find('MockTraderProfile').prop('userID')).toEqual('trader123');
 });
 
-it('displays error from traderService.getTrader', async () => {
-  const errMsg = 'this is my test error';
-  ctx.traderService.getTrader.rejects(new Error(errMsg));
+it('displays error from query', async () => {
+  graphQLMocks = [
+    {
+      request: {
+        query: GET_TRADER_FROM_USERNAME,
+        variables: {
+          username: 'test',
+        },
+      },
+      result: {
+        errors: [
+          { message: 'Test Error 1' },
+          { message: 'Test Error 2' },
+        ],
+      },
+    },
+  ];
 
-  const component = setup({ match: { params: { username: 'test' } } });
-  const wrapper = await asyncMount(component);
+  const component = setup(props, graphQLMocks);
+  const wrapper = await asyncMountWrapper(component);
 
-  expect(wrapper.text()).toContain(errMsg);
+  expect(wrapper.find('Alert').at(0)).toHaveText('Test Error 1');
+  expect(wrapper.find('Alert').at(1)).toHaveText('Test Error 2');
 });

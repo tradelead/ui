@@ -1,14 +1,14 @@
 import React, { useRef } from 'react';
+import PropTypes from 'prop-types';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import TraderPropType from '../../propTypes/Trader';
 import useElSize from '../../hooks/useElSize';
-import ScoreChart from '../ScoreChart/ScoreChart';
-import TraderInfo from './TraderInfo';
+import { ScoreChartContainer as ScoreChart } from '../ScoreChart/ScoreChartContainer';
+import { TraderInfoContainer as TraderInfo } from './TraderInfoContainer';
 import './TraderProfile.css';
 
-const TraderProfile = ({ trader }) => {
+const TraderProfile = ({ userID }) => {
   const chartWrapEl = useRef({});
   const [chartWidth, chartHeight] = useElSize(chartWrapEl);
 
@@ -17,12 +17,12 @@ const TraderProfile = ({ trader }) => {
       <Container fluid>
         <Row>
           <Col lg className="traderInfoWrap">
-            <TraderInfo trader={trader} />
+            <TraderInfo userID={userID} />
           </Col>
 
           <Col lg className="traderScoreWrap">
             <div className="traderScoreWrapInner" ref={chartWrapEl}>
-              <ScoreChart trader={trader} width={chartWidth} height={chartHeight} />
+              <ScoreChart userID={userID} width={chartWidth} height={chartHeight} />
             </div>
           </Col>
         </Row>
@@ -32,7 +32,7 @@ const TraderProfile = ({ trader }) => {
 };
 
 TraderProfile.propTypes = {
-  trader: TraderPropType.isRequired,
+  userID: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
 };
 
 export default TraderProfile;

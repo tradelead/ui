@@ -3,12 +3,14 @@ import { BrowserRouter as Router, Route } from 'react-router-dom';
 import { push as Menu } from 'react-burger-menu';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloProviderHooks } from 'react-apollo-hooks';
-import { MockedProvider } from 'react-apollo/test-utils';
 import createMockClient from './testUtils/createMockClient';
 import sleep from './utils/sleep';
 import DashboardScreen from './screens/Dashboard/DashboardScreen';
 import LeaderboardScreen from './screens/Leaderboard/LeaderboardScreen';
-import TraderProfileScreen from './screens/TraderProfile/TraderProfileScreen';
+import {
+  GET_TRADER_FROM_USERNAME,
+  TraderProfileScreen,
+} from './screens/TraderProfile/TraderProfileScreen';
 import AccountScreen from './screens/Account/AccountScreen';
 import Header from './components/Header/Header';
 import AppContext from './AppContext';
@@ -17,6 +19,7 @@ import { GET_SCORE_HISTORY } from './components/ScoreChart/ScoreChartContainer';
 import { GET_TOP_TRADERS, GET_USERS } from './components/Leaderboard/LeaderboardContainer';
 import { GET_PROFILE, UPDATE_PROFILE } from './components/AccountSettings/ProfileSettings/ProfileSettingsContainer';
 import { GET_EXCHANGE_KEYS_AND_EXCHANGES } from './components/AccountSettings/ExchangeKeys/ExchangeKeysContainer';
+import { GET_TRADER_INFO } from './components/TraderProfile/TraderInfoContainer';
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -201,7 +204,7 @@ function getGraphQLMocks() {
               __typename: 'User',
               id: 'trader123',
               username: 'tradername123',
-              profilePhoto: { url: '' },
+              profilePhoto: { __typename: 'Image', url: '' },
             },
           ],
         },
@@ -291,6 +294,43 @@ function getGraphQLMocks() {
             { __typename: 'Exchange', exchangeID: 'binance', exchangeLabel: 'Binance' },
             { __typename: 'Exchange', exchangeID: 'bittrex', exchangeLabel: 'Bittrex' },
             { __typename: 'Exchange', exchangeID: 'coinbase', exchangeLabel: 'Coinbase' },
+          ],
+        },
+      },
+    },
+    {
+      request: {
+        query: GET_TRADER_FROM_USERNAME,
+        variables: {
+          username: 'tradername123',
+        },
+      },
+      result: {
+        data: {
+          trader: {
+            __typename: 'User',
+            id: 'trader123',
+          },
+        },
+      },
+    },
+    {
+      request: {
+        query: GET_TRADER_INFO,
+        variables: {
+          id: 'trader123',
+        },
+      },
+      result: {
+        data: {
+          getUsers: [
+            {
+              __typename: 'User',
+              username: 'tradername',
+              bio: 'test bio',
+              website: 'http://test.com',
+              profilePhoto: { __typename: 'Image', url: '' },
+            },
           ],
         },
       },

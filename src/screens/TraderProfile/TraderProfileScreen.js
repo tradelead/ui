@@ -1,35 +1,38 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
+import gql from 'graphql-tag';
+import { useQuery } from 'react-apollo-hooks';
 import Spinner from 'react-bootstrap/Spinner';
 import Alert from 'react-bootstrap/Alert';
-import AppContext from '../../AppContext';
 import TraderProfile from '../../components/TraderProfile/TraderProfile';
 import './TraderProfileScreen.css';
 
+export const GET_TRADER_FROM_USERNAME = gql`
+  query getTraderFromUsername($username: String) {
+    trader: getUserByUsername(username: $username) {
+      id
+    }
+  }
+`;
+
 const TraderProfileScreen = ({ match }) => {
-  const { traderService } = useContext(AppContext);
-
-  const [trader, setTrader] = useState({});
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    (async () => {
-      try {
-        setTrader(await traderService.getTrader(match.params.username));
-      } catch (e) {
-        setError(e.message);
-      }
-    })();
+  const { data: { trader }, loading, error } = useQuery(GET_TRADER_FROM_USERNAME, {
+    variables: {
+      username: match.params.username,
+    },
   });
+  console.log(trader);
+  const id = trader && trader.id;
+  const errors = error && error.graphQLErrors;
 
   return (
     <div className="traderProfileScreen">
 
-      {trader.id && !error && (
-        <TraderProfile trader={trader} />
+      {id && !error && (
+        <TraderProfile userID={id} />
       )}
 
-      {!trader.id && !error && (
+      {loading && (
         <div className="loading">
           <Spinner
             className="loader"
@@ -43,9 +46,9 @@ const TraderProfileScreen = ({ match }) => {
         </div>
       )}
 
-      {error && (
-        <Alert variant="danger" className="error">{error}</Alert>
-      )}
+      {errors && errors.map(e => (
+        <Alert key={e.message} variant="danger" className="error">{e.message}</Alert>
+      ))}
     </div>
   );
 };
@@ -58,4 +61,4 @@ TraderProfileScreen.propTypes = {
   }).isRequired,
 };
 
-export default TraderProfileScreen;
+export { TraderProfileScreen };

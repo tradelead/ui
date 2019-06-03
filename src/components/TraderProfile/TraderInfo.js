@@ -1,25 +1,22 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import Spinner from 'react-bootstrap/Spinner';
 import Alert from 'react-bootstrap/Alert';
 import { FaDesktop } from 'react-icons/fa';
-import TraderPropType from '../../propTypes/Trader';
-import useTraderInfo from '../../hooks/useTraderInfo';
 import TraderImg from '../TraderImg/TraderImg';
 import './TraderInfo.css';
 
-const TraderInfo = ({ trader }) => {
-  const [info, loading, error] = useTraderInfo(trader, ['bio', 'website']);
-
+const TraderInfo = ({ info, loading, errors }) => {
   const bioLines = info.bio ? info.bio.split('\n') : [];
 
   return (
     <div className="traderInfo">
       <div className="profilePhoto">
-        <TraderImg trader={trader} size="thumbnail" />
+        <TraderImg src={info.profilePhoto && info.profilePhoto.url} alt={info.username} />
       </div>
 
       <div className="username">
-        {trader.username}
+        {info.username}
       </div>
 
       {loading && (
@@ -36,9 +33,9 @@ const TraderInfo = ({ trader }) => {
         </div>
       )}
 
-      {error && (
-        <Alert variant="danger">{error}</Alert>
-      )}
+      {errors && errors.map(error => (
+        <Alert key={error.message} variant="danger">{error.message}</Alert>
+      ))}
 
       <div className="bio">
         {bioLines.map(line => (
@@ -60,7 +57,22 @@ const TraderInfo = ({ trader }) => {
 };
 
 TraderInfo.propTypes = {
-  trader: TraderPropType.isRequired,
+  info: PropTypes.shape({
+    username: PropTypes.string,
+    website: PropTypes.string,
+    bio: PropTypes.string,
+    profilePhoto: PropTypes.shape({
+      url: PropTypes.string,
+    }),
+  }).isRequired,
+  loading: PropTypes.bool.isRequired,
+  errors: PropTypes.arrayOf(PropTypes.shape({
+    message: PropTypes.string,
+  })),
+};
+
+TraderInfo.defaultProps = {
+  errors: null,
 };
 
 export default TraderInfo;
