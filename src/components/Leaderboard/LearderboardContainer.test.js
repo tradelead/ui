@@ -1,9 +1,8 @@
 import React from 'react';
-import { act } from 'react-dom/test-utils';
 import { mount } from 'enzyme';
-import { MockedProvider } from 'react-apollo/test-utils';
+import { ApolloProvider } from 'react-apollo-hooks';
 import { BrowserRouter as Router } from 'react-router-dom';
-import sleep from '../../utils/sleep';
+import createMockClient from '../../testUtils/createMockClient';
 import asyncMountWrapper from '../../testUtils/asyncMountWrapper';
 import asyncUpdateWrapper from '../../testUtils/asyncUpdateWrapper';
 import AppContext from '../../AppContext';
@@ -17,13 +16,14 @@ jest.mock('./Leaderboard', () => (
 ));
 
 function setup({ ctx, graphqlMocks, ...obj }) {
+  const client = createMockClient(graphqlMocks);
   return {
     component: (
       <Router>
         <AppContext.Provider value={ctx}>
-          <MockedProvider mocks={graphqlMocks} addTypename={false}>
+          <ApolloProvider client={client}>
             <LeaderboardContainer {...obj} />
-          </MockedProvider>
+          </ApolloProvider>
         </AppContext.Provider>
       </Router>
     ),
@@ -37,12 +37,10 @@ const props = {};
 beforeEach(() => {
   ctx = {};
 
-  const query = GET_TOP_TRADERS;
-
   graphqlMocks = [
     {
       request: {
-        query,
+        query: GET_TOP_TRADERS,
         variables: {
           limit: 15,
         },
@@ -50,13 +48,28 @@ beforeEach(() => {
       result: {
         data: {
           allTimeTopTraders: [
-            { id: 'test', rank: 1, scores: [{ score: 1 }] },
+            {
+              __typename: 'Trader',
+              id: 'test',
+              rank: 1,
+              scores: [{ __typename: 'Score', score: 1 }],
+            },
           ],
           weeklyTopTraders: [
-            { id: 'test', rank: 2, scores: [{ score: 2 }] },
+            {
+              __typename: 'Trader',
+              id: 'test2',
+              rank: 2,
+              scores: [{ __typename: 'Score', score: 2 }],
+            },
           ],
           dailyTopTraders: [
-            { id: 'test', rank: 3, scores: [{ score: 3 }] },
+            {
+              __typename: 'Trader',
+              id: 'test3',
+              rank: 3,
+              scores: [{ __typename: 'Score', score: 3 }],
+            },
           ],
         },
       },
@@ -65,13 +78,39 @@ beforeEach(() => {
       request: {
         query: GET_USERS,
         variables: {
-          ids: ['test'],
+          ids: ['test', 'test2', 'test3'],
         },
       },
       result: {
         data: {
           getUsers: [
-            { id: 'test', username: 'testname', profilePhoto: { url: 'http://test.com/image.jpeg' } },
+            {
+              __typename: 'User',
+              id: 'test',
+              username: 'testname',
+              profilePhoto: {
+                __typename: 'Image',
+                url: 'http://test.com/image.jpeg',
+              },
+            },
+            {
+              __typename: 'User',
+              id: 'test2',
+              username: 'testname',
+              profilePhoto: {
+                __typename: 'Image',
+                url: 'http://test.com/image.jpeg',
+              },
+            },
+            {
+              __typename: 'User',
+              id: 'test3',
+              username: 'testname',
+              profilePhoto: {
+                __typename: 'Image',
+                url: 'http://test.com/image.jpeg',
+              },
+            },
           ],
         },
       },
@@ -85,7 +124,7 @@ it('passes all time top traders to Leaderboard', async () => {
   await asyncUpdateWrapper(wrapper);
 
   expect(wrapper.find('MockLeaderboard').prop('allTimeTopTraders'))
-    .toEqual([{
+    .toMatchObject([{
       id: 'test',
       username: 'testname',
       profilePhoto: { url: 'http://test.com/image.jpeg' },
@@ -102,8 +141,8 @@ it('passes weekly top traders to Leaderboard', async () => {
   await asyncUpdateWrapper(wrapper);
 
   expect(wrapper.find('MockLeaderboard').prop('weeklyTopTraders'))
-    .toEqual([{
-      id: 'test',
+    .toMatchObject([{
+      id: 'test2',
       username: 'testname',
       profilePhoto: { url: 'http://test.com/image.jpeg' },
       rank: 2,
@@ -119,8 +158,8 @@ it('passes daily top traders to Leaderboard', async () => {
   await asyncUpdateWrapper(wrapper);
 
   expect(wrapper.find('MockLeaderboard').prop('dailyTopTraders'))
-    .toEqual([{
-      id: 'test',
+    .toMatchObject([{
+      id: 'test3',
       username: 'testname',
       profilePhoto: { url: 'http://test.com/image.jpeg' },
       rank: 3,

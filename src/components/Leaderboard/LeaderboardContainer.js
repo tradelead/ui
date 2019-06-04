@@ -1,6 +1,6 @@
 import React from 'react';
 import gql from 'graphql-tag';
-import { Query } from 'react-apollo';
+import { useQuery } from 'react-apollo-hooks';
 import get from 'lodash.get';
 import union from 'lodash.union';
 import Leaderboard from './Leaderboard';
@@ -83,47 +83,40 @@ export function LeaderboardContainer() {
     });
   };
 
+  const tradersRes = useQuery(GET_TOP_TRADERS, {
+    variables: { limit: 15 },
+    pollInterval: 5000,
+  });
+
+  const usersRes = useQuery(GET_USERS, {
+    variables: { ids: getUserIDs(tradersRes) },
+    fetchPolicy: 'cache-and-network',
+  });
+
+  const usersInfo = get(usersRes, 'data.getUsers') || [];
+
+  console.log(tradersRes.data);
+  const allTimeTopTraders = reduceTopTraders(
+    get(tradersRes, 'data.allTimeTopTraders') || [],
+    usersInfo,
+  );
+
+  const weeklyTopTraders = reduceTopTraders(
+    get(tradersRes, 'data.weeklyTopTraders') || [],
+    usersInfo,
+  );
+
+  const dailyTopTraders = reduceTopTraders(
+    get(tradersRes, 'data.dailyTopTraders') || [],
+    usersInfo,
+  );
+
   return (
-    <Query
-      query={GET_TOP_TRADERS}
-      variables={{ limit: 15 }}
-      pollInterval={5000}
-    >
-      {tradersRes => (
-        <Query
-          query={GET_USERS}
-          fetchPolicy="cache-and-network"
-          variables={{ ids: getUserIDs(tradersRes) }}
-        >
-          {(usersRes) => {
-            const usersInfo = get(usersRes, 'data.getUsers') || [];
-
-            const allTimeTopTraders = reduceTopTraders(
-              get(tradersRes, 'data.allTimeTopTraders') || [],
-              usersInfo,
-            );
-
-            const weeklyTopTraders = reduceTopTraders(
-              get(tradersRes, 'data.weeklyTopTraders') || [],
-              usersInfo,
-            );
-
-            const dailyTopTraders = reduceTopTraders(
-              get(tradersRes, 'data.dailyTopTraders') || [],
-              usersInfo,
-            );
-
-            return (
-              <Leaderboard
-                allTimeTopTraders={allTimeTopTraders}
-                weeklyTopTraders={weeklyTopTraders}
-                dailyTopTraders={dailyTopTraders}
-                loading={tradersRes.loading || usersRes.loading}
-              />
-            );
-          }}
-        </Query>
-      )}
-    </Query>
+    <Leaderboard
+      allTimeTopTraders={allTimeTopTraders}
+      weeklyTopTraders={weeklyTopTraders}
+      dailyTopTraders={dailyTopTraders}
+      loading={tradersRes.loading || usersRes.loading}
+    />
   );
 }
