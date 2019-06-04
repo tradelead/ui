@@ -1,8 +1,10 @@
 import React from 'react';
 import { act } from 'react-dom/test-utils';
 import { mount } from 'enzyme';
-import { MockedProvider } from 'react-apollo/test-utils';
+import { ApolloProvider } from 'react-apollo';
+import { ApolloProvider as ApolloProviderHooks } from 'react-apollo-hooks';
 import { BrowserRouter as Router } from 'react-router-dom';
+import createMockClient from '../../../testUtils/createMockClient';
 import sleep from '../../../utils/sleep';
 import asyncMountWrapper from '../../../testUtils/asyncMountWrapper';
 import asyncUpdateWrapper from '../../../testUtils/asyncUpdateWrapper';
@@ -17,13 +19,17 @@ jest.mock('./ProfileSettings', () => (
 ));
 
 function setup({ ctx, graphqlMocks, ...obj }) {
+  const client = createMockClient(graphqlMocks);
+
   return {
     component: (
       <Router>
         <AppContext.Provider value={ctx}>
-          <MockedProvider mocks={graphqlMocks} addTypename={false}>
-            <ProfileSettingsContainer {...obj} />
-          </MockedProvider>
+          <ApolloProvider client={client}>
+            <ApolloProviderHooks client={client}>
+              <ProfileSettingsContainer {...obj} />
+            </ApolloProviderHooks>
+          </ApolloProvider>
         </AppContext.Provider>
       </Router>
     ),
@@ -54,9 +60,14 @@ beforeEach(() => {
         data: {
           getUsers: [
             {
+              __typename: 'User',
               username: 'tradername',
               website: 'http://test.com',
               bio: 'This is my bio',
+              profilePhoto: {
+                __typename: 'Image',
+                url: 'http://test.com/image.jpg',
+              },
             },
           ],
         },
@@ -90,9 +101,14 @@ beforeEach(() => {
         data: {
           getUsers: [
             {
+              __typename: 'User',
               username: 'tradername',
               website: 'http://newurl.com',
               bio: 'testing bio',
+              profilePhoto: {
+                __typename: 'Image',
+                url: 'http://test.com/image.jpg',
+              },
             },
           ],
         },
@@ -104,9 +120,11 @@ beforeEach(() => {
 it('calls ProfileSettings with user info', async () => {
   const { component } = setup({ ctx, graphqlMocks, ...props });
   const wrapper = await asyncMountWrapper(component);
+  await sleep(10);
+  await asyncUpdateWrapper(wrapper);
 
   expect(wrapper.find('MockProfileSettings').prop('profile').data)
-    .toEqual({
+    .toMatchObject({
       website: 'http://test.com',
       bio: 'This is my bio',
       profilePhoto: {

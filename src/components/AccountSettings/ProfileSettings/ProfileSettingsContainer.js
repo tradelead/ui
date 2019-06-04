@@ -1,9 +1,11 @@
 import React, { useContext } from 'react';
 import gql from 'graphql-tag';
-import { Query, Mutation, withApollo } from 'react-apollo';
+import { withApollo } from 'react-apollo';
+import { useQuery, useMutation } from 'react-apollo-hooks';
 import get from 'lodash.get';
 import axios from 'axios';
 import AppContext from '../../../AppContext';
+import useAsyncAction from '../../../utils/useAsyncAction';
 import ProfileSettings from './ProfileSettings';
 
 export const GET_PROFILE = gql`
@@ -74,43 +76,44 @@ const ProfileSettingsContainer = withApollo(({ client }) => {
   const app = useContext(AppContext);
   const id = get(app, 'user.id');
 
+  const profileRes = useQuery(GET_PROFILE, {
+    variables: { id },
+    skip: !id,
+    fetchPolicy: 'cache-and-network',
+  });
+
+  const updateUser = useMutation(UPDATE_PROFILE, {
+    onError: () => {},
+    refetchQueries: () => [{ query: GET_PROFILE, variables: { id } }],
+  });
+
+  const [dispatchUpdateUser, ...updateUserRes] = useAsyncAction(updateUser);
+  const updateRes = {
+    data: updateUserRes[0],
+    loading: updateUserRes[1],
+    error: updateUserRes[2],
+  };
+
   return (
-    <Query
-      query={GET_PROFILE}
-      variables={{ id }}
-      skip={!id}
-      fetchPolicy="cache-and-network"
-    >
-      {profileRes => (
-        <Mutation
-          mutation={UPDATE_PROFILE}
-          onError={() => {}}
-          refetchQueries={() => [{ query: GET_PROFILE, variables: { id } }]}
-        >
-          {(updateUser, updateUserRes) => (
-            <ProfileSettings
-              profile={{
-                data: get(profileRes.data, 'getUsers[0]') || {},
-                loading: profileRes.loading,
-                errors: get(profileRes.error, 'graphQLErrors'),
-              }}
-              update={input => updateUser({ variables: { id, input } })}
-              updateRes={{
-                loading: updateUserRes.loading,
-                errors: updateUserRes.error && updateUserRes.error.graphQLErrors,
-              }}
-              uploadProfilePhoto={({ file, progressFn }) => upload({
-                id,
-                key: 'profilePhoto',
-                file,
-                progressFn,
-                signUpload,
-              })}
-            />
-          )}
-        </Mutation>
-      )}
-    </Query>
+    <ProfileSettings
+      profile={{
+        data: get(profileRes.data, 'getUsers[0]') || {},
+        loading: profileRes.loading,
+        errors: get(profileRes.error, 'graphQLErrors'),
+      }}
+      update={input => dispatchUpdateUser({ variables: { id, input } })}
+      updateRes={{
+        loading: updateRes.loading,
+        errors: updateRes.error && updateRes.error.graphQLErrors,
+      }}
+      uploadProfilePhoto={({ file, progressFn }) => upload({
+        id,
+        key: 'profilePhoto',
+        file,
+        progressFn,
+        signUpload,
+      })}
+    />
   );
 });
 
