@@ -5,7 +5,7 @@ import { useQuery, useMutation } from 'react-apollo-hooks';
 import get from 'lodash.get';
 import axios from 'axios';
 import AppContext from '../../../AppContext';
-import useAsyncAction from '../../../utils/useAsyncAction';
+import useAsyncAction from '../../../hooks/useAsyncAction';
 import ProfileSettings from './ProfileSettings';
 
 export const GET_PROFILE = gql`

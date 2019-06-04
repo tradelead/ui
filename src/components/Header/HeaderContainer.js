@@ -26,7 +26,7 @@ export const GET_SCORE_RANK_PROFILEPHOTO = gql`
 export function HeaderContainer() {
   const app = useContext(AppContext);
   const user = app.user || {};
-
+  console.log(app.user);
   const { data } = useQuery(GET_SCORE_RANK_PROFILEPHOTO, {
     variables: {
       id: user.id,

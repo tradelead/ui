@@ -7,7 +7,7 @@ import Spinner from 'react-bootstrap/Spinner';
 import Card from 'react-bootstrap/Card';
 import { FaTrashAlt } from 'react-icons/fa';
 import AppContext from '../../../AppContext';
-import useAsyncAction from '../../../utils/useAsyncAction';
+import useAsyncAction from '../../../hooks/useAsyncAction';
 import './ExchangeKeys.css';
 
 const ExchangeKeys = ({
