@@ -42,7 +42,7 @@ const ExchangeKeysContainer = () => {
   const userID = id;
 
   const {
-    data: { exchangeKeys, exchanges },
+    data,
     error,
     loading,
   } = useQuery(GET_EXCHANGE_KEYS_AND_EXCHANGES, {
@@ -51,12 +51,15 @@ const ExchangeKeysContainer = () => {
     fetchPolicy: 'cache-and-network',
   });
 
-  const exchangesMap = exchanges && exchanges.reduce((acc, { exchangeID, exchangeLabel }) => {
+  const exchanges = get(data, 'exchanges') || [];
+  const exchangeKeys = get(data, 'exchangeKeys') || [];
+
+  const exchangesMap = exchanges.reduce((acc, { exchangeID, exchangeLabel }) => {
     acc[exchangeID] = exchangeLabel;
     return acc;
   }, {});
 
-  const keys = exchangeKeys && exchangeKeys.map(exchangeKey => ({
+  const keys = exchangeKeys.map(exchangeKey => ({
     ...exchangeKey,
     exchangeLabel: exchangesMap[exchangeKey.exchangeID],
   }));
