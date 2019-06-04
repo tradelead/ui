@@ -123,7 +123,7 @@ function getGraphQLMocks() {
 
   const mockTopTraders = new Array(15).fill({
     __typename: 'Trader',
-    id: 'trader123',
+    id: 'trader1234',
     rank: 123,
     scores: [{ __typename: 'Score', score: 1234 }],
   });
@@ -194,7 +194,7 @@ function getGraphQLMocks() {
       request: {
         query: GET_USERS,
         variables: {
-          ids: ['trader123'],
+          ids: ['trader1234'],
         },
       },
       result: {
@@ -202,7 +202,7 @@ function getGraphQLMocks() {
           getUsers: [
             {
               __typename: 'User',
-              id: 'trader123',
+              id: 'trader1234',
               username: 'tradername123',
               profilePhoto: { __typename: 'Image', url: '' },
             },
