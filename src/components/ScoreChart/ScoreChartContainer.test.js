@@ -1,8 +1,9 @@
 import React from 'react';
 import { act } from 'react-dom/test-utils';
 import { mount } from 'enzyme';
-import { MockedProvider } from 'react-apollo/test-utils';
+import { ApolloProvider } from 'react-apollo-hooks';
 import { BrowserRouter as Router } from 'react-router-dom';
+import createMockClient from '../../testUtils/createMockClient';
 import sleep from '../../utils/sleep';
 import asyncMountWrapper from '../../testUtils/asyncMountWrapper';
 import asyncUpdateWrapper from '../../testUtils/asyncUpdateWrapper';
@@ -17,13 +18,14 @@ jest.mock('./ScoreChart', () => (
 ));
 
 function setup({ ctx, graphqlMocks, ...obj }) {
+  const client = createMockClient(graphqlMocks);
   return {
     component: (
       <Router>
         <AppContext.Provider value={ctx}>
-          <MockedProvider mocks={graphqlMocks} addTypename={false}>
+          <ApolloProvider client={client}>
             <ScoreChartContainer {...obj} />
-          </MockedProvider>
+          </ApolloProvider>
         </AppContext.Provider>
       </Router>
     ),
@@ -62,10 +64,11 @@ beforeEach(() => {
       result: {
         data: {
           getTrader: {
+            __typename: 'Trader',
             scores: [
-              { time: 100, score: 1 },
-              { time: 200, score: 2 },
-              { time: 300, score: 3 },
+              { __typename: 'Score', time: 100, score: 1 },
+              { __typename: 'Score', time: 200, score: 2 },
+              { __typename: 'Score', time: 300, score: 3 },
             ],
           },
         },
@@ -83,10 +86,11 @@ beforeEach(() => {
       result: {
         data: {
           getTrader: {
+            __typename: 'Trader',
             scores: [
-              { time: 200, score: 1 },
-              { time: 300, score: 2 },
-              { time: 400, score: 3 },
+              { __typename: 'Score', time: 200, score: 1 },
+              { __typename: 'Score', time: 300, score: 2 },
+              { __typename: 'Score', time: 400, score: 3 },
             ],
           },
         },
@@ -104,10 +108,11 @@ beforeEach(() => {
       result: {
         data: {
           getTrader: {
+            __typename: 'Trader',
             scores: [
-              { time: 300, score: 1 },
-              { time: 400, score: 2 },
-              { time: 500, score: 3 },
+              { __typename: 'Score', time: 300, score: 1 },
+              { __typename: 'Score', time: 400, score: 2 },
+              { __typename: 'Score', time: 500, score: 3 },
             ],
           },
         },
@@ -125,10 +130,11 @@ beforeEach(() => {
       result: {
         data: {
           getTrader: {
+            __typename: 'Trader',
             scores: [
-              { time: 400, score: 1 },
-              { time: 500, score: 2 },
-              { time: 600, score: 3 },
+              { __typename: 'Score', time: 400, score: 1 },
+              { __typename: 'Score', time: 500, score: 2 },
+              { __typename: 'Score', time: 600, score: 3 },
             ],
           },
         },
@@ -176,6 +182,7 @@ it('calls ScoreChart with scoreHistory for 1 day', async () => {
 
   const setDuration = wrapper.find('MockScoreChart').prop('setDuration');
   setDuration(1);
+  await sleep(10);
   await asyncUpdateWrapper(wrapper);
 
   expect(wrapper.find('MockScoreChart').prop('scoreHistory'))

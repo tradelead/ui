@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import gql from 'graphql-tag';
-import { Query } from 'react-apollo';
+import { useQuery } from 'react-apollo-hooks';
 import get from 'lodash.get';
 import ScoreChart from './ScoreChart';
 
@@ -37,24 +37,21 @@ function ScoreChartContainer({ userID, height, width }) {
     variables.duration = duration * 24 * 60 * 60 * 1000;
   }
 
+  const { data, loading, error } = useQuery(GET_SCORE_HISTORY, {
+    variables,
+    skip: !userID,
+    pollInterval: 60000,
+  });
+
   return (
-    <Query
-      query={GET_SCORE_HISTORY}
-      variables={variables}
-      skip={!userID}
-      pollInterval={60000}
-    >
-      {({ loading, data, error }) => (
-        <ScoreChart
-          scoreHistory={get(data, 'getTrader.scores') || []}
-          loading={loading}
-          errors={get(error, 'graphQLErrors')}
-          setDuration={setDuration}
-          height={height}
-          width={width}
-        />
-      )}
-    </Query>
+    <ScoreChart
+      scoreHistory={get(data, 'getTrader.scores') || []}
+      loading={loading}
+      errors={get(error, 'graphQLErrors')}
+      setDuration={setDuration}
+      height={height}
+      width={width}
+    />
   );
 }
 
