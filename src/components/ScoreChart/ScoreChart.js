@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Spinner from 'react-bootstrap/Spinner';
+import Alert from 'react-bootstrap/Alert';
 import { timeFormat } from 'd3-time-format';
 import './ScoreChart.css';
 import Filters from './Filters';
@@ -10,6 +11,7 @@ import LineChart from './LineChart/LineChart';
 const ScoreChart = ({
   scoreHistory,
   loading,
+  errors,
   setDuration,
   width,
   height,
@@ -35,6 +37,10 @@ const ScoreChart = ({
 
   return (
     <div className="score-chart">
+      <div className="errors">
+        {errors && errors.map(error => (<Alert key={error.message} variant="danger">{error.message}</Alert>))}
+      </div>
+
       {loading && (
         <Spinner size="sm" animation="border" role="status">
           <span className="sr-only">Loading...</span>

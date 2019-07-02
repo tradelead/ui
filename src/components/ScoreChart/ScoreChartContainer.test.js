@@ -58,7 +58,7 @@ beforeEach(() => {
           id: 'trader123',
           groupBy: 'day',
           duration: 30 * 24 * 60 * 60 * 1000,
-          limit: 499,
+          limit: 99,
         },
       },
       result: {
@@ -80,7 +80,7 @@ beforeEach(() => {
         variables: {
           id: 'trader123',
           duration: 7 * 24 * 60 * 60 * 1000,
-          limit: 499,
+          limit: 99,
         },
       },
       result: {
@@ -102,7 +102,7 @@ beforeEach(() => {
         variables: {
           id: 'trader123',
           duration: 24 * 60 * 60 * 1000,
-          limit: 499,
+          limit: 99,
         },
       },
       result: {
@@ -124,7 +124,7 @@ beforeEach(() => {
         variables: {
           id: 'trader123',
           groupBy: 'week',
-          limit: 499,
+          limit: 99,
         },
       },
       result: {
@@ -224,7 +224,7 @@ it('calls ScoreChart with error when query errors', async () => {
           id: 'trader123',
           groupBy: 'day',
           duration: 30 * 24 * 60 * 60 * 1000,
-          limit: 499,
+          limit: 99,
         },
       },
       result: {

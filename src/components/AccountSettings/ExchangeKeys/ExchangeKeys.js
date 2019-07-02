@@ -6,7 +6,6 @@ import Alert from 'react-bootstrap/Alert';
 import Spinner from 'react-bootstrap/Spinner';
 import Card from 'react-bootstrap/Card';
 import { FaTrashAlt } from 'react-icons/fa';
-import AppContext from '../../../AppContext';
 import useAsyncAction from '../../../hooks/useAsyncAction';
 import './ExchangeKeys.css';
 
@@ -18,8 +17,6 @@ const ExchangeKeys = ({
   deleteKey,
   ...otherProps
 }) => {
-  const app = useContext(AppContext);
-
   const [showModal, setShowModal] = useState(false);
   const defaultExchangeID = exchanges && exchanges.length > 0 && exchanges[0].exchangeID;
   const [exchangeID, setExchangeID] = useState(defaultExchangeID);
@@ -27,7 +24,7 @@ const ExchangeKeys = ({
   const [secret, setSecret] = useState('');
 
   // eslint-disable-next-line no-unused-vars
-  const [dispatchAddKey, addedKey, addingKey, addKeyError] = useAsyncAction(addKey);
+  const [dispatchAddKey, addedKey, addingKey, addKeyError] = useAsyncAction(addKey, true);
 
 
   const addExchangeKey = async (e) => {
@@ -97,6 +94,11 @@ const ExchangeKeys = ({
     <div className="exchangeKey">
       <Card>
         <Card.Header>
+          {loading && (
+            <Spinner size="sm" animation="border" role="status">
+              <span className="sr-only">Loading...</span>
+            </Spinner>
+          )}
           <h2>Exchange Keys</h2>
           <Button className="add-key" variant="primary" onClick={() => setShowModal(true)}>
             Add Key
@@ -142,7 +144,7 @@ const ExchangeKeys = ({
                 </button>
 
                 {key.deletingError && key.deletingError.errors.length > 0 && (
-                  <Alert dismissible className="error" variant="danger">
+                  <Alert className="error" variant="danger">
                     <Alert.Heading>Error Deleting Key</Alert.Heading>
                     {key.deletingError.errors.map(error => (
                       <p key={error.message}>{error.message}</p>
@@ -183,6 +185,7 @@ const ExchangeKeys = ({
                 required
                 onChange={(e) => { setExchangeID(e.target.value); }}
               >
+                <option>-- SELECT ONE --</option>
                 {Object.keys(exchanges || {}).map(id => (
                   <option key={id} value={id}>{exchanges[id]}</option>
                 ))}
@@ -212,7 +215,7 @@ const ExchangeKeys = ({
             <p>Remember! Use read only exchange keys.</p>
 
             {addKeyError && addKeyError.errors.length > 0 ? (
-              <Alert dismissible variant="danger">
+              <Alert variant="danger">
                 <Alert.Heading>Error Adding Key</Alert.Heading>
                 {addKeyError.errors.map(error => (
                   <p key={error.message}>{error.message}</p>

@@ -9,11 +9,11 @@ import useAsyncAction from '../../../hooks/useAsyncAction';
 import ProfileSettings from './ProfileSettings';
 
 export const GET_PROFILE = gql`
-  query getProfile($id: ID) {
+  query getProfile($id: ID!) {
     getUsers(ids: [$id]) {
       bio
       website
-      profilePhoto(size: "thumbnail") {
+      profilePhoto(size: thumbnail) {
         url
       }
     }
@@ -21,13 +21,13 @@ export const GET_PROFILE = gql`
 `;
 
 export const UPDATE_PROFILE = gql`
-  mutation updateProfile($id: ID, $input: UpdateUserInput) {
+  mutation updateProfile($id: ID!, $input: UpdateUserInput!) {
     updateUser(id: $id, input: $input)
   }
 `;
 
 export const SIGN_UPLOAD = gql`
-  mutation signUpload($id: ID, $key: String) {
+  mutation signUpload($id: ID!, $key: String!) {
     signUpload(userID: $id, key: $key) {
       url
       fields
@@ -43,6 +43,7 @@ async function upload({
   progressFn,
 }) {
   const signedUpload = await signUpload({ id, key });
+  console.log(signedUpload, file.type, file);
 
   const form = new FormData();
 
@@ -66,8 +67,8 @@ async function upload({
 
 const ProfileSettingsContainer = withApollo(({ client }) => {
   const signUpload = async ({ id, key }) => {
-    const { data } = await client.query({
-      query: SIGN_UPLOAD,
+    const { data } = await client.mutate({
+      mutation: SIGN_UPLOAD,
       variables: { id, key },
     });
     return data.signUpload;
@@ -83,7 +84,8 @@ const ProfileSettingsContainer = withApollo(({ client }) => {
   });
 
   const updateUser = useMutation(UPDATE_PROFILE, {
-    onError: () => {},
+    onError: () => {
+    },
     refetchQueries: () => [{ query: GET_PROFILE, variables: { id } }],
   });
 
@@ -94,12 +96,17 @@ const ProfileSettingsContainer = withApollo(({ client }) => {
     error: updateUserRes[2],
   };
 
+  let profileErrors = get(profileRes.error, 'graphQLErrors');
+  if (profileErrors && profileErrors.length === 0 && profileRes.error) {
+    profileErrors = [profileRes.error];
+  }
+
   return (
     <ProfileSettings
       profile={{
         data: get(profileRes.data, 'getUsers[0]') || {},
         loading: profileRes.loading,
-        errors: get(profileRes.error, 'graphQLErrors'),
+        errors: profileErrors,
       }}
       update={input => dispatchUpdateUser({ variables: { id, input } })}
       updateRes={{

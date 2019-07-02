@@ -6,12 +6,12 @@ import get from 'lodash.get';
 import TraderInfo from './TraderInfo';
 
 export const GET_TRADER_INFO = gql`
-  query getTraderInfo($id: ID) {
+  query getTraderInfo($id: ID!) {
     getUsers(ids: [$id]) {
       username
       bio
       website
-      profilePhoto(size: "thumbnail") {
+      profilePhoto(size: thumbnail) {
         url
       }
     }

@@ -2,6 +2,13 @@
     position: relative;
 }
 
+.score-chart .errors {
+    position: absolute;
+    z-index: 10;
+    bottom: 0;
+    left: 15px;
+}
+
 .score-chart .spinner-border {
     position: absolute;
     left: 50%;

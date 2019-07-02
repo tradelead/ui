@@ -6,7 +6,7 @@ import get from 'lodash.get';
 import ScoreChart from './ScoreChart';
 
 export const GET_SCORE_HISTORY = gql`
-  query getScoreHistory($id: ID, $groupBy: String, $duration: Long, $limit: Int) {
+  query getScoreHistory($id: ID!, $limit: Int!, $groupBy: String, $duration: Long) {
     getTrader(id: $id) {
       scores(input: {
         duration: $duration
@@ -26,7 +26,7 @@ function ScoreChartContainer({ userID, height, width }) {
     id: userID,
   };
 
-  variables.limit = 499;
+  variables.limit = 99;
 
   if (duration === 0) {
     variables.groupBy = 'week';
@@ -43,11 +43,16 @@ function ScoreChartContainer({ userID, height, width }) {
     pollInterval: 60000,
   });
 
+  const errors = get(error, 'graphQLErrors') || [];
+  if (errors && errors.length === 0 && error) {
+    errors.push(error);
+  }
+
   return (
     <ScoreChart
       scoreHistory={get(data, 'getTrader.scores') || []}
       loading={loading}
-      errors={get(error, 'graphQLErrors')}
+      errors={errors}
       setDuration={setDuration}
       height={height}
       width={width}

@@ -29,6 +29,7 @@ beforeEach(() => {
       register: sinon.stub(),
       logout: sinon.stub(),
     },
+    user: {},
   };
 });
 

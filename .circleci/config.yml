@@ -1,0 +1,53 @@
+version: 2.1
+
+orbs:
+  aws-cli: circleci/aws-cli@0.1.13
+  aws-s3: circleci/aws-s3@1.0.11
+
+jobs:
+  test:
+    docker:
+      - image: circleci/node:8
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - node-modules-dev-{{ checksum "package-lock.json" }}
+            - node-modules-dev
+      - run: NODE_ENV=development npm install
+      - save_cache:
+          paths:
+            - node_modules
+          key: node-modules-dev-{{ checksum "package-lock.json" }}
+      - run: npm run test
+  buildAndDeploy:
+    docker:
+      - image: circleci/node:8
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - node-modules-{{ checksum "package-lock.json" }}
+            - node-modules
+      - run: npm install
+      - save_cache:
+          paths:
+            - node_modules
+          key: node-modules-{{ checksum "package-lock.json" }}
+      - run: sudo apt-get install python-dev
+      - aws-cli/install
+      - run: |
+          npm run build
+          aws s3 sync ./build s3://$S3_BUCKET --delete
+          aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths "/*"
+workflows:
+  test_and_deploy:
+    jobs:
+      - test
+      - buildAndDeploy:
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - master

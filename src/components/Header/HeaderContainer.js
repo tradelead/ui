@@ -6,9 +6,9 @@ import Header from './Header';
 import AppContext from '../../AppContext';
 
 export const GET_SCORE_RANK_PROFILEPHOTO = gql`
-  query getScoreRankProfilePhoto($id: ID) {
+  query getScoreRankProfilePhoto($id: ID!) {
     getUsers(ids: [$id]) {
-      profilePhoto(size: "thumbnail") {
+      profilePhoto(size: thumbnail) {
         url
       }
     }
@@ -26,7 +26,6 @@ export const GET_SCORE_RANK_PROFILEPHOTO = gql`
 export function HeaderContainer() {
   const app = useContext(AppContext);
   const user = app.user || {};
-  console.log(app.user);
   const { data } = useQuery(GET_SCORE_RANK_PROFILEPHOTO, {
     variables: {
       id: user.id,

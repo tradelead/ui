@@ -12,7 +12,9 @@ const Header = ({
   rank,
   profilePhoto,
 }) => {
-  const { closeMenu } = useContext(AppContext);
+  const ctx = useContext(AppContext);
+  const curUser = ctx.user;
+  const { closeMenu } = ctx;
 
   return (
     <div className="header-inner">
@@ -21,7 +23,9 @@ const Header = ({
       </div>
 
       <ul className="navigation">
-        <li><NavLink onClick={closeMenu} exact activeClassName="active" to="/">Performance</NavLink></li>
+        {curUser.id && (
+          <li><NavLink onClick={closeMenu} exact activeClassName="active" to="/">Performance</NavLink></li>
+        )}
         <li><NavLink onClick={closeMenu} activeClassName="active" to="/leaders">Leaders</NavLink></li>
       </ul>
 

@@ -33,7 +33,14 @@ const ProfileSettings = ({
     <div className="profileSettings">
       <Card>
         <Card.Header>
-          <h2>Profile Settings</h2>
+          {profile.loading && (
+            <Spinner size="sm" animation="border" role="status">
+              <span className="sr-only">Loading...</span>
+            </Spinner>
+          )}
+          <h2>
+            Profile Settings
+          </h2>
           <Button className="save" variant="primary" onClick={updateUser}>
             Save
             {updateRes.loading && (
@@ -54,7 +61,7 @@ const ProfileSettings = ({
         <Card.Body>
           {errors && errors.map(error => (<Alert key={error.message} variant="danger">{error.message}</Alert>))}
           {updateRes.errors && updateRes.errors.map(error => (
-            <Alert key={error.message} dismissible className="save-error" variant="danger">{error.message}</Alert>
+            <Alert key={error.message} className="save-error" variant="danger">{error.message}</Alert>
           ))}
 
           <Form onSubmit={updateUser}>
@@ -122,7 +129,7 @@ const ProfileSettings = ({
                     )}
 
                     {uploadError && (
-                      <Alert dismissible className="upload-profile-photo-error" variant="danger">
+                      <Alert className="upload-profile-photo-error" variant="danger">
                         {uploadError}
                       </Alert>
                     )}

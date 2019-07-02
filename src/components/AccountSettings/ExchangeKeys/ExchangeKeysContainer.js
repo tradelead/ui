@@ -7,7 +7,7 @@ import AppContext from '../../../AppContext';
 import ExchangeKeys from './ExchangeKeys';
 
 export const GET_EXCHANGE_KEYS_AND_EXCHANGES = gql`
-  query getExchangeKeysAndExchanges($id: ID) {
+  query getExchangeKeysAndExchanges($id: ID!) {
     exchangeKeys: getExchangeKeys(userID: $id) {
       exchangeID
       tokenLast4
@@ -22,16 +22,12 @@ export const GET_EXCHANGE_KEYS_AND_EXCHANGES = gql`
 
 export const ADD_EXCHANGE_KEY = gql`
   mutation addExchangeKey($input: AddExchangeKeyInput) {
-    addExchangeKeys(input: $input) {
-      exchangeID
-      tokenLast4
-      secretLast4
-    }
+    addExchangeKeys(input: $input)
   }
 `;
 
 export const DELETE_EXCHANGE_KEY = gql`
-  mutation deleteExchangeKey($id: String, $exchangeID: String) {
+  mutation deleteExchangeKey($id: ID!, $exchangeID: ID!) {
     deleteExchangeKeys(userID: $id, exchangeID: $exchangeID)
   }
 `;

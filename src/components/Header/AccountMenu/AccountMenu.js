@@ -6,6 +6,7 @@ import TraderImg from '../../TraderImg/TraderImg';
 
 const AccountMenu = ({ user, profilePhoto }) => {
   const app = useContext(AppContext);
+
   const {
     register,
     login,
@@ -15,8 +16,7 @@ const AccountMenu = ({ user, profilePhoto }) => {
 
   const { closeMenu } = app;
 
-  const port = window.location.port ? `:${window.location.port}` : '';
-  const accountUrl = `${window.location.protocol}//${window.location.host}${port}/account`;
+  const accountUrl = `${window.location.protocol}//${window.location.host}/account`;
 
   const [open, setOpen] = useState(false);
   const toggleOpen = () => setOpen(!open);
@@ -28,8 +28,8 @@ const AccountMenu = ({ user, profilePhoto }) => {
   if (!loggedIn) {
     return (
       <div className="account-login-register">
-        <button type="button" className="login" onClick={() => { login(); closeMenu(); }}>Login</button>
-        <button type="button" className="signup" onClick={() => { register(accountUrl); closeMenu(); }}>Sign Up</button>
+        <button type="button" className="login btn btn-primary" onClick={() => { login(); closeMenu(); }}>Login</button>
+        <button type="button" className="signup btn btn-primary" onClick={() => { register(accountUrl); closeMenu(); }}>Sign Up</button>
       </div>
     );
   }
@@ -61,7 +61,6 @@ const AccountMenu = ({ user, profilePhoto }) => {
             <a
               className="loginSettings"
               href={settingsUrl}
-              target="_blank"
               rel="noopener noreferrer"
             >
               Login Settings

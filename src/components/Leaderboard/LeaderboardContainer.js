@@ -6,7 +6,7 @@ import union from 'lodash.union';
 import Leaderboard from './Leaderboard';
 
 export const GET_TOP_TRADERS = gql`  
-  query getLeaderboard($limit: Int) {
+  query getLeaderboard($limit: Int!) {
     allTimeTopTraders: getTopTraders(limit: $limit) {
       id
       rank
@@ -40,11 +40,11 @@ export const GET_TOP_TRADERS = gql`
 `;
 
 export const GET_USERS = gql`
-  query getUsersInfo($ids: [ID]) {
+  query getUsersInfo($ids: [ID!]!) {
     getUsers(ids: $ids) {
       id
       username
-      profilePhoto(size: "thumbnail") {
+      profilePhoto(size: thumbnail) {
         url
       }
     }
@@ -111,12 +111,24 @@ export function LeaderboardContainer() {
     usersInfo,
   );
 
+  const errors = get(tradersRes.error, 'graphQLErrors') || [];
+  if (errors && errors.length === 0 && tradersRes.error) {
+    errors.push(tradersRes.error);
+  }
+
+  if (get(usersRes.error, 'graphQLErrors') && get(usersRes.error, 'graphQLErrors').length > 0) {
+    errors.push(...get(usersRes.error, 'graphQLErrors'));
+  } else if (errors && errors.length === 0 && usersRes.error) {
+    errors.push(usersRes.error);
+  }
+
   return (
     <Leaderboard
       allTimeTopTraders={allTimeTopTraders}
       weeklyTopTraders={weeklyTopTraders}
       dailyTopTraders={dailyTopTraders}
       loading={tradersRes.loading || usersRes.loading}
+      errors={errors}
     />
   );
 }

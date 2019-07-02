@@ -1,11 +1,11 @@
-import createMockClient from './testUtils/createMockClient';
-import { GET_SCORE_RANK_PROFILEPHOTO } from './components/Header/HeaderContainer';
-import { GET_SCORE_HISTORY } from './components/ScoreChart/ScoreChartContainer';
-import { GET_TOP_TRADERS, GET_USERS } from './components/Leaderboard/LeaderboardContainer';
-import { GET_PROFILE, UPDATE_PROFILE, } from './components/AccountSettings/ProfileSettings/ProfileSettingsContainer';
-import { GET_EXCHANGE_KEYS_AND_EXCHANGES } from './components/AccountSettings/ExchangeKeys/ExchangeKeysContainer';
-import { GET_TRADER_FROM_USERNAME } from './screens/TraderProfile/TraderProfileScreen';
-import { GET_TRADER_INFO } from './components/TraderProfile/TraderInfoContainer';
+import createMockClient from '../testUtils/createMockClient';
+import { GET_SCORE_RANK_PROFILEPHOTO } from '../components/Header/HeaderContainer';
+import { GET_SCORE_HISTORY } from '../components/ScoreChart/ScoreChartContainer';
+import { GET_TOP_TRADERS, GET_USERS } from '../components/Leaderboard/LeaderboardContainer';
+import { GET_PROFILE, UPDATE_PROFILE } from '../components/AccountSettings/ProfileSettings/ProfileSettingsContainer';
+import { GET_EXCHANGE_KEYS_AND_EXCHANGES } from '../components/AccountSettings/ExchangeKeys/ExchangeKeysContainer';
+import { GET_TRADER_FROM_USERNAME } from '../screens/TraderProfile/TraderProfileScreen';
+import { GET_TRADER_INFO } from '../components/TraderProfile/TraderInfoContainer';
 
 const mockClient = createMockClient(getGraphQLMocks());
 
