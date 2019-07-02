@@ -243,7 +243,7 @@ function useXScale({ data, xMax }) {
   return useMemo(() => scaleTime({
     range: [0, xMax],
     domain: extent(data, xSelector),
-  }), [data]);
+  }), [data, xMax]);
 }
 
 function useYScale({
@@ -262,7 +262,7 @@ function useYScale({
       domain: [yMinValuePadded, yMaxValuePadded],
       nice: true,
     });
-  }, [data]);
+  }, [data, yMax, marginTop]);
 }
 
 function useChartMouseAndTouchHandler({
@@ -306,7 +306,7 @@ function useChartMouseAndTouchHandler({
     chartMouseAndTouchHandler(e);
   };
 
-  return useMemo(() => eventHandler, [data]);
+  return useMemo(() => eventHandler, [data]); // eslint-disable-line react-hooks/exhaustive-deps
 }
 
 function numTicksForHeight(height) {

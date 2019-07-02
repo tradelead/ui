@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
@@ -73,7 +73,7 @@ const ExchangeKeys = ({
     updatedKeyState.push(...newKeys);
 
     setExchangeKeys(updatedKeyState);
-  }, [JSON.stringify(otherProps.exchangeKeys)]);
+  }, [JSON.stringify(otherProps.exchangeKeys)]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const deleteExchangeKey = (key) => {
     (async () => {

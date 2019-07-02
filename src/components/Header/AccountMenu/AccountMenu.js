@@ -97,7 +97,7 @@ function useOutsideClicksCloseMenu(setOpen) {
 
     document.addEventListener('click', shouldIfNotWithinMenu);
     return () => document.removeEventListener('click', shouldIfNotWithinMenu);
-  }, []);
+  }, [setOpen]);
 }
 
 export default AccountMenu;

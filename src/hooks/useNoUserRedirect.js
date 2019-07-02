@@ -16,7 +16,7 @@ export default function useNoUserRedirect() {
         setRedirect(true);
       }
     })();
-  }, [user]);
+  }, [user, auth]);
 
   return redirect;
 }
