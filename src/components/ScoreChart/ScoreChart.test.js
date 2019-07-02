@@ -122,19 +122,19 @@ describe('chart data', () => {
         time: 100,
         value: 1,
         date: new Date(100),
-        dateFormatted: 'Dec 31 @ 07 PM',
+        dateFormatted: 'Jan 01 @ 12 AM',
       },
       {
         time: 200,
         value: 2,
         date: new Date(200),
-        dateFormatted: 'Dec 31 @ 07 PM',
+        dateFormatted: 'Jan 01 @ 12 AM',
       },
       {
         time: 300,
         value: 3,
         date: new Date(300),
-        dateFormatted: 'Dec 31 @ 07 PM',
+        dateFormatted: 'Jan 01 @ 12 AM',
       },
     ];
 
