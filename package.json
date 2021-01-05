@@ -17,7 +17,7 @@
     "apollo-link-error": "^1.1.10",
     "apollo-link-http": "^1.5.15",
     "apollo-link-retry": "^2.2.14",
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "combine-errors": "^3.0.3",
     "d3-array": "^2.0.3",
     "d3-time-format": "^2.1.3",
